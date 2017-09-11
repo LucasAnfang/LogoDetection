@@ -21,6 +21,7 @@ import requests
 import tqdm
 
 from instagram_scraper.constants import *
+from dictConstants import *
 
 try:
     reload(sys)  # Python 2.7
@@ -360,27 +361,27 @@ class InstagramScraper(object):
         for post in self.posts:
             pictureDict = {}
             if "id" in post:
-                pictureDict['id'] = post['id']
+                pictureDict[PICTURE_ID] = post['id']
             if "dimensions" in post:
-                pictureDict['dimensions'] = post['dimensions']
+                pictureDict[DIMENSIONS] = post['dimensions']
             if "edge_media_to_caption" in post:
-                pictureDict["caption"] = post["edge_media_to_caption"]["edges"][0]["node"]["text"]
+                pictureDict[CAPTION] = post["edge_media_to_caption"]["edges"][0]["node"]["text"]
             if "owner" in post:
-                pictureDict["ownerId"] = post["owner"]["id"]
+                pictureDict[OWNER_ID] = post["owner"]["id"]
             if "tags" in post:
-                pictureDict['tags'] = post["tags"]
+                pictureDict[TAGS] = post["tags"]
             if "taken_at_timestamp" in post:
-                pictureDict['time'] = post["taken_at_timestamp"]
+                pictureDict[TIME] = post["taken_at_timestamp"]
             if "location" in post and post['location'] is not None:
                 if "name" in post["location"]:
-                    pictureDict["location"] = post["location"]["name"]
+                    pictureDict[LOCATION] = post["location"]["name"]
             else:
                 pictureDict["location"] = None
             if "display_url" in post:
                 nameArr = str(post["display_url"]).split('/')
-                pictureDict["pictureName"] = nameArr[len(nameArr)-1]
-            pictureDict["logoName"] = self.logo_name
-            pictureDict["hasLogo"] = None
+                pictureDict[PICTURE_NAME] = nameArr[len(nameArr)-1]
+            pictureDict[LOGO_NAME] = self.logo_name
+            pictureDict[HAS_LOGO] = None
             self.LDInfo.append(pictureDict)
 
     def get_profile_pic(self, dst, executor, future_to_item, user, username):
