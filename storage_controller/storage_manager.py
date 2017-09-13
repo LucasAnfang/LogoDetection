@@ -7,9 +7,10 @@ from azure.storage.blob import (
 )
 import uuid
 import datetime
-import pickle
-from log_entry import LogEntry
-from log_entry import LogEntries
+import json
+from log_entry_constants import *
+# from log_entry import LogEntry
+# from log_entry_constants import LogEntries
 
 
 class LogoStorageConnector:
@@ -111,22 +112,20 @@ class LogoStorageConnector:
 	def log(self, container_name, interacting_entity, action, full_blob_name):
 		path = self.get_blobs_parent_directory(full_blob_name)
 		log_path = path + '/log'
-		log_entities = LogEntries()
+		log_entities = []
 		if self.exists(container_name,log_path):
-			print(log_path)
-			# log_file = self.service.get_blob_to_text(container_name, log_path)
-			# raw_logs = log_file.content
+			# print(log_path)
+			log_file = self.service.get_blob_to_text(container_name, log_path)
+			raw_logs = log_file.content
 			# print(raw_logs)
-			# log_entities = pickle.loads(raw_logs)
-			# for entity in log_entities:
-			# 	print('{} {}'.format(entity.Interacting_Entity, entity.Action))
-		
+			log_entities = json.loads(raw_logs)		
 		log_entry = {}
-
-		log_entry = LogEntry(interacting_entity, action, full_blob_name)
+		log_entry[INTERACTING_ENTITY] = interacting_entity
+		log_entry[ACTION] = action
+		log_entry[PATH] = full_blob_name
+		log_entry[PROCESSING_STATUS] = UNPROCESSED
 		log_entities.append(log_entry)
-		raw = log_entities.serialize()
-		print(raw)
+		raw = json.dumps(log_entities, indent=4, sort_keys=True, ensure_ascii=False)
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
 	def get_blobs_parent_directory(self, full_blob_name):

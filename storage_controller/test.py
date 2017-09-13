@@ -1,14 +1,27 @@
 from storage_manager import LogoStorageConnector
-lsc = LogoStorageConnector()
+lsc = LogoStorageConnector("IG_SCRAPER")
 
-lsc.upload_brand_training_input_data("Patagonia", "Hat")
-# lsc.upload_brand_training_input_data("Patagonia", "fun")
+lsc.upload_brand_training_input_data("Patagonia", "IMAGE_SET_1")
+lsc.upload_brand_training_input_data("Patagonia", "IMAGE_SET_2")
+lsc.upload_brand_training_input_data("Patagonia", "IMAGE_SET_3")
+lsc.upload_brand_training_input_data("Patagonia", "IMAGE_SET_4")
 
-# lsc.upload_brand_operational_input_data("Patagonia", "Shirt with logo")
-# lsc.upload_brand_operational_input_data("Patagonia", "Star Wars")
+lsc.upload_brand_operational_input_data("Patagonia", "IMAGE_SET_1")
+lsc.upload_brand_operational_input_data("Patagonia", "IMAGE_SET_2")
 
-# lsc.upload_brand_operational_output_data("Patagonia", "Star Wars Rules")
-# lsc.upload_brand_operational_output_data("Patagonia", "Star Trek Drules")
+lsc.upload_brand_operational_output_data("Patagonia", "IMAGE_SET_1")
+lsc.upload_brand_operational_output_data("Patagonia", "IMAGE_SET_2")
+
+lsc.upload_brand_training_input_data("Nike", "IMAGE_SET_1")
+lsc.upload_brand_training_input_data("Nike", "IMAGE_SET_2")
+lsc.upload_brand_training_input_data("Nike", "IMAGE_SET_3")
+lsc.upload_brand_training_input_data("Nike", "IMAGE_SET_4")
+
+lsc.upload_brand_operational_input_data("Nike", "IMAGE_SET_1")
+lsc.upload_brand_operational_input_data("Nike", "IMAGE_SET_2")
+
+lsc.upload_brand_operational_output_data("Nike", "IMAGE_SET_1")
+lsc.upload_brand_operational_output_data("Nike", "IMAGE_SET_2")
 
 lsc.pretty_print_storage_structure()
 lsc.download_brand_training_input_data("Patagonia")
