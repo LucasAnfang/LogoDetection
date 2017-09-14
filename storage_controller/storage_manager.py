@@ -8,10 +8,7 @@ from azure.storage.blob import (
 import uuid
 import datetime
 import json
-from log_entry_constants import *
-# from log_entry import LogEntry
-# from log_entry_constants import LogEntries
-
+from log_entries import *
 
 class LogoStorageConnector:
 	def __init__(self, Interacting_Entity = "Meh"):
@@ -50,12 +47,12 @@ class LogoStorageConnector:
 		self._upload_data(container, path, data)
 
 	""" Download """
-	def download_brand_training_input_data(self, brand):
+	def download_brand_training_input_data(self, brand, action_filter):
 		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
 		blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
 
-	def download_brand_operational_input_data(self, brand):
+	def download_brand_operational_input_data(self, brand, action_filter):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
 		blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
@@ -86,6 +83,9 @@ class LogoStorageConnector:
 	def _create_output_container(self):
 		self.service.create_container(self.constants.OUTPUT_CONTAINER_NAME)
 
+	def _create_container(self, container_name):
+		self.service.create_container(container_name)
+
 	def _input_container(self):
 		return self.constants.INPUT_CONTAINER_NAME
 
@@ -99,33 +99,40 @@ class LogoStorageConnector:
 		return self._get_resource_reference(prefix)
 
 	def _upload_data(self, container_name, path, data):
+		if not(self.exists(container_name)):
+			self._create_container(container_name)
 		blob_name = self._get_blob_reference(path);
 		self.service.create_blob_from_text(container_name, blob_name, data)
-		self.log(container_name, self.Interacting_Entity, "Upload", blob_name)
+		self.log(container_name, self.Interacting_Entity, "Up to the load", blob_name)
 		return blob_name
 
 	def _download_data(self, container_name, full_blob_name):
+		if not(self.exists(container_name)):
+			self._create_container(container_name)
 		blob = self.service.get_blob_to_text(container_name, full_blob_name)
 		content = blob.content
 		return content
 
+	def retreive_log_entities(self, container_name, path,  action_filter = None):
+		log_entries = LogEntries()
+		log_path = path + "/log"
+		if self.exists(container_name,log_path):
+			log_file = self.service.get_blob_to_text(container_name, log_path)
+			raw_logs = log_file.content
+			log_entries.deserialize(raw_logs)
+		# if(action_filter != None):
+		return log_entries
+
 	def log(self, container_name, interacting_entity, action, full_blob_name):
 		path = self.get_blobs_parent_directory(full_blob_name)
 		log_path = path + '/log'
-		log_entities = []
+		log_entries = LogEntries()
 		if self.exists(container_name,log_path):
-			# print(log_path)
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
-			# print(raw_logs)
-			log_entities = json.loads(raw_logs)		
-		log_entry = {}
-		log_entry[INTERACTING_ENTITY] = interacting_entity
-		log_entry[ACTION] = action
-		log_entry[PATH] = full_blob_name
-		log_entry[PROCESSING_STATUS] = UNPROCESSED
-		log_entities.append(log_entry)
-		raw = json.dumps(log_entities, indent=4, sort_keys=True, ensure_ascii=False)
+			log_entries.deserialize(raw_logs)	
+		log_entries.append(interacting_entity, action, full_blob_name, UNPROCESSED)
+		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
 	def get_blobs_parent_directory(self, full_blob_name):
