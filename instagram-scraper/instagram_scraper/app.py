@@ -193,9 +193,9 @@ class InstagramScraper(object):
                 if ((item['is_video'] is False and 'image' in self.media_types) or \
                     (item['is_video'] is True and 'video' in self.media_types)
                 ) and self.is_new_media(item):
-                    print str(self.download)
-                    print str(item)
-                    print str(dst)
+                    #print str(self.download)
+                    #print str(item)
+                    #print str(dst)
                     future = executor.submit(self.download, item, dst)
                     future_to_item[future] = item
 
