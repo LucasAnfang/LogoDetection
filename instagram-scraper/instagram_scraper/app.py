@@ -222,7 +222,7 @@ class InstagramScraper(object):
                             'Media for {0} at {1} generated an exception: {2}'.format(value, item['urls'], future.exception()))
 
             if (self.media_metadata or self.comments or self.include_location) and self.posts:
-                self.get_relevent_info()
+                #self.get_relevent_info()
                 self.save_json(self.LDInfo, '{0}/{1}.json'.format(dst, value))
 
     def query_hashtag_gen(self, hashtag):

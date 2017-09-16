@@ -109,31 +109,35 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         compreses and serializes
         Calls Lucas's functions
     '''
-    '''
-    args = {
-        'username': [tag],
-        'verbose': 0,
-        'login_user': None,
-        'usernames': [tag],
-        'quiet': False,
-        'tag': True,
-        'retain_username': True,
-        'include_location': True,
-        'media_types': ['image', 'video', 'story'],
-        'media_metadata': True,
-        'search_location': False,
-        'login_only': False,
-        'destination': destinationFolder,
-        'maximum': maxNum,
-        'comments': False,
-        'filename': None,
-        'filter': None,
-        'location': False,
-        'login_pass': None,
-        'latest': False,
-        'logo_name': tag
-    }
-    '''
+    #saves it to director
+    for tag in hashtagList:
+        args = {
+            'username': [tag],
+            'verbose': 0,
+            'login_user': None,
+            'usernames': [tag],
+            'quiet': False,
+            'tag': True,
+            'retain_username': True,
+            'include_location': True,
+            'media_types': ['image', 'video', 'story'],
+            'media_metadata': True,
+            'search_location': False,
+            'login_only': False,
+            'destination': destinationFolder,
+            'maximum': maxNum,
+            'comments': False,
+            'filename': None,
+            'filter': None,
+            'location': False,
+            'login_pass': None,
+            'latest': False,
+            'logo_name': logo_brand
+        }
+        scraper = InstagramScraper(**args)
+        scraper.scrape_hashtag()
+    
+
 
 
 
@@ -152,6 +156,9 @@ def main():
     #train-upload
     parser.add_argument('--train-upload', '--train_upload' '-tu', default=None, help='logo brand name to upload directory into networed file system')
     parser.add_argument('--dir', '-d', default=None, help='Directory pictures are stored in on local machine')
+    #operate
+    parser.add_argument('--operate', '-o', nargs='+', default=None, help='Input list of hashtags (in ) to scrape on with -l logo.')
+    parser.add_argument('--logo', '-l', default=None, help='Logo name to operate on')
     args= parser.parse_args()
 
     if(args.train is not None):
@@ -166,6 +173,14 @@ def main():
             print "Error: directory invalid"
             return
         IG_train_upload(args.train_upload, picDir)
+    if args.operate is not None:
+        if args.logo is None:
+            print "Please provide a logo name with operate"
+            return
+        else:
+            IG_operate(args.logo, args.operate, args.max_images)
+            return
+
         
    
 
