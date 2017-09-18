@@ -7,7 +7,7 @@ from PIL import Image
 
 from instagram_scraper import InstagramScraper
 from instagram_scraper.constants import *
-
+from instagram_scraper.dictConstants import *
 
 #class IGScrapper(object):
 
@@ -38,7 +38,6 @@ def IG_train(logo_brand, maxImages):
         <logo_brand>
         This only needs to scrape for pictures
     '''
-    print("here")
     destinationFolder = './'
     args = {
         'username': [logo_brand],
@@ -110,6 +109,9 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         Calls Lucas's functions
     '''
     #saves it to director
+
+    operateDict = {}
+    destinationFolder = './'
     for tag in hashtagList:
         args = {
             'username': [tag],
@@ -120,12 +122,12 @@ def IG_operate(logo_brand, hashtagList, maxImages):
             'tag': True,
             'retain_username': True,
             'include_location': True,
-            'media_types': ['image', 'video', 'story'],
+            'media_types': ['image'],
             'media_metadata': True,
             'search_location': False,
             'login_only': False,
             'destination': destinationFolder,
-            'maximum': maxNum,
+            'maximum': maxImages,
             'comments': False,
             'filename': None,
             'filter': None,
@@ -135,7 +137,10 @@ def IG_operate(logo_brand, hashtagList, maxImages):
             'logo_name': logo_brand
         }
         scraper = InstagramScraper(**args)
-        scraper.scrape_hashtag()
+        print "hashtag " + tag
+        operateDict scraper.scrape_hashtag_operate()
+        #operateDict.update(scraper.scrape_hashtag_operate())
+        print "done with operate"
     
 
 
