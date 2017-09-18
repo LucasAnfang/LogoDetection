@@ -1,7 +1,5 @@
 import json
 
-INTERACTING_ENTITY = 'Interacting_Entity'
-ACTION = 'Action'
 PATH = 'Path'
 PROCESSING_STATUS = 'Processing_Status'
 PROCESSED = 'Processed'
