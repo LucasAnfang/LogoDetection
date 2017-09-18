@@ -62,6 +62,12 @@ class LogoStorageConnector:
 		blobs = self.service.list_blobs(container_name=self.constants.OUTPUT_CONTAINER_NAME, prefix=path)
 		return blobs
 
+	def get_container_directories(self, container_name):
+		# blobs = self.service.list_blobs(container_name=container_name, delimiter='/')
+		# return [blob.name for blob in blobs.prefixes]
+		bloblistingresult = self.service.list_blobs(container_name=container_name, delimiter='/') 
+		return [blob.name.rsplit('/', 1)[0] for blob in bloblistingresult]
+
 	""" Pretty Print """
 
 	def pretty_print_storage_structure(self):
@@ -103,7 +109,7 @@ class LogoStorageConnector:
 			self._create_container(container_name)
 		blob_name = self._get_blob_reference(path);
 		self.service.create_blob_from_text(container_name, blob_name, data)
-		self.log(container_name, self.Interacting_Entity, "Up to the load", blob_name)
+		self.log(container_name, blob_name)
 		return blob_name
 
 	def _download_data(self, container_name, full_blob_name):
@@ -113,17 +119,18 @@ class LogoStorageConnector:
 		content = blob.content
 		return content
 
-	def retreive_log_entities(self, container_name, path,  action_filter = None):
+	def retreive_log_entities(self, container_name, path,  processing_status_filter = None):
 		log_entries = LogEntries()
 		log_path = path + "/log"
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)
-		# if(action_filter != None):
+		if(processing_status_filter != None):
+			log_entries = log_entries.GetLogs(processing_status_filter=processing_status_filter)
 		return log_entries
 
-	def log(self, container_name, interacting_entity, action, full_blob_name):
+	def log(self, container_name, full_blob_name):
 		path = self.get_blobs_parent_directory(full_blob_name)
 		log_path = path + '/log'
 		log_entries = LogEntries()
@@ -131,7 +138,7 @@ class LogoStorageConnector:
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)	
-		log_entries.append(interacting_entity, action, full_blob_name, UNPROCESSED)
+		log_entries.append(full_blob_name, UNPROCESSED)
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
