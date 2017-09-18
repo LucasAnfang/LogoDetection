@@ -23,6 +23,9 @@ import tqdm
 from instagram_scraper.constants import *
 from instagram_scraper.dictConstants import *
 
+from PIL import Image
+import urllib, cStringIO
+
 try:
     reload(sys)  # Python 2.7
     sys.setdefaultencoding("UTF8")
@@ -44,7 +47,6 @@ class InstagramScraper(object):
 
         allowed_attr = list(default_attr.keys())
         default_attr.update(kwargs)
-        print default_attr
         for key in default_attr:
             if key in allowed_attr:
                 self.__dict__[key] = kwargs.get(key)
@@ -172,6 +174,9 @@ class InstagramScraper(object):
     def scrape_hashtag(self):
         self.__scrape_query(self.query_hashtag_gen)
 
+    def scrape_hashtag_operate(self):
+        return self.__scrape_query_operate(self.query_hashtag_gen)
+
     def scrape_location(self):
         self.__scrape_query(self.query_location_gen)
 
@@ -193,9 +198,9 @@ class InstagramScraper(object):
                 if ((item['is_video'] is False and 'image' in self.media_types) or \
                     (item['is_video'] is True and 'video' in self.media_types)
                 ) and self.is_new_media(item):
-                    print str(self.download)
-                    print str(item)
-                    print str(dst)
+                    #print str(self.download)
+                    #print str(item)
+                    #print str(dst)
                     future = executor.submit(self.download, item, dst)
                     future_to_item[future] = item
 
@@ -222,8 +227,68 @@ class InstagramScraper(object):
                             'Media for {0} at {1} generated an exception: {2}'.format(value, item['urls'], future.exception()))
 
             if (self.media_metadata or self.comments or self.include_location) and self.posts:
-                self.get_relevent_info()
                 self.save_json(self.LDInfo, '{0}/{1}.json'.format(dst, value))
+
+    
+    def __scrape_query_operate(self, media_generator, executor=concurrent.futures.ThreadPoolExecutor(max_workers=10)):
+        """Scrapes the specified value for posted media."""
+        for value in self.usernames:
+            self.posts = []
+            self.last_scraped_filemtime = 0
+            future_to_item = {}
+
+            dst = self.make_dst_dir(value)
+
+            if self.include_location:
+                media_exec = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+
+            iter = 0
+            for item in tqdm.tqdm(media_generator(value), desc='Searching {0} for posts'.format(value), unit=" media",
+                                  disable=self.quiet):
+                if ((item['is_video'] is False and 'image' in self.media_types) or \
+                    (item['is_video'] is True and 'video' in self.media_types)
+                ) and self.is_new_media(item):
+                    #print "Download"
+                    #print str(self.download)
+                    #print "item"
+                    #get url from item 
+                    picURL = str(item['urls'][0])
+                    file = cStringIO.StringIO(urllib.urlopen(picURL).read())
+                    picture = Image.open(file)
+                    picDict = {
+                        'pixels': picture.tobytes(),
+                        'size': picture.size,
+                        'mode': picture.mode,
+                    }
+                    print "pic dict"
+                    #print picDict
+                    item['picture'] = picDict
+
+                if self.include_location and 'location' not in item:
+                    media_exec.submit(self.__get_location, item)
+
+                if self.comments:
+                    item['edge_media_to_comment']['data'] = list(self.query_comments_gen(item['shortcode']))
+
+                if self.media_metadata or self.comments or self.include_location:
+                    self.posts.append(item)
+
+                iter = iter + 1
+                if self.maximum != 0 and iter >= self.maximum:
+                    break
+            
+            if future_to_item:
+                for future in tqdm.tqdm(concurrent.futures.as_completed(future_to_item), total=len(future_to_item),
+                                        desc='Downloading', disable=self.quiet):
+                    item = future_to_item[future]
+
+                    if future.exception() is not None:
+                        self.logger.warning(
+                            'Media for {0} at {1} generated an exception: {2}'.format(value, item['urls'], future.exception()))
+
+            if (self.media_metadata or self.comments or self.include_location) and self.posts:
+                self.get_relevent_info()
+                return self.LDInfo
 
     def query_hashtag_gen(self, hashtag):
         return self.__query_gen(QUERY_HASHTAG, 'hashtag', hashtag)
@@ -346,7 +411,6 @@ class InstagramScraper(object):
                             'Media at {0} generated an exception: {1}'.format(item['urls'], future.exception()))
 
             if (self.media_metadata or self.comments or self.include_location) and self.posts:
-                #self.get_relevent_info()
                 self.save_json(self.posts, '{0}/{1}.json'.format(dst, username))
 
         self.logout()
@@ -360,8 +424,8 @@ class InstagramScraper(object):
 
         for post in self.posts:
             pictureDict = {}
-            if "id" in post:
-                pictureDict[PICTURE_ID] = post['id']
+            #if "id" in post:
+            #    pictureDict[PICTURE_ID] = post['id']
             if "dimensions" in post:
                 pictureDict[DIMENSIONS] = post['dimensions']
             if "edge_media_to_caption" in post:
@@ -377,11 +441,14 @@ class InstagramScraper(object):
                     pictureDict[LOCATION] = post["location"]["name"]
             else:
                 pictureDict["location"] = None
+            '''
             if "display_url" in post:
                 nameArr = str(post["display_url"]).split('/')
                 pictureDict[PICTURE_NAME] = nameArr[len(nameArr)-1]
+            '''
             pictureDict[LOGO_NAME] = self.logo_name
             pictureDict[HAS_LOGO] = None
+            pictureDict[PICTURE] = post['picture']
             self.LDInfo.append(pictureDict)
 
     def get_profile_pic(self, dst, executor, future_to_item, user, username):
