@@ -98,6 +98,21 @@ def IG_train_upload(logo_brand, directory):
     #pickledTrainPicsTo_(byteString)
     #call Lucas's function here
     
+def unserialize_operate(pickledByteString):
+    '''
+        Take in pickled byte string that was created qith IG_operate
+        unpickle
+        loops through pic dict
+        see dictConstants.py for constants
+    '''
+    byteString = depickle(pickledByteString)
+    for picDict in byteString:
+        print picDict[LOGO_NAME]
+        print picDict[OWNER_ID]
+        im = stringDictToPic(picDict[PICTURE])
+        im.show()
+
+
 
 def IG_operate(logo_brand, hashtagList, maxImages):
     '''
@@ -110,7 +125,7 @@ def IG_operate(logo_brand, hashtagList, maxImages):
     '''
     #saves it to director
 
-    operateDict = {}
+    picList = [] # list of dictionaries of metadata + string version of list
     destinationFolder = './'
     for tag in hashtagList:
         args = {
@@ -137,10 +152,12 @@ def IG_operate(logo_brand, hashtagList, maxImages):
             'logo_name': logo_brand
         }
         scraper = InstagramScraper(**args)
-        print "hashtag " + tag
-        operateDict scraper.scrape_hashtag_operate()
-        #operateDict.update(scraper.scrape_hashtag_operate())
-        print "done with operate"
+        picList.extend(scraper.scrape_hashtag_operate())
+        pickledPicList = toPickle(picList)
+        #for testing, call this to unserialize
+        #unserialize_operate(pickledPicList)
+        #call luca's function here
+        print "Operate complete"
     
 
 

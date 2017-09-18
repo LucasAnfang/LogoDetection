@@ -47,7 +47,6 @@ class InstagramScraper(object):
 
         allowed_attr = list(default_attr.keys())
         default_attr.update(kwargs)
-        print default_attr
         for key in default_attr:
             if key in allowed_attr:
                 self.__dict__[key] = kwargs.get(key)
@@ -262,7 +261,7 @@ class InstagramScraper(object):
                         'mode': picture.mode,
                     }
                     print "pic dict"
-                    print picDict
+                    #print picDict
                     item['picture'] = picDict
 
                 if self.include_location and 'location' not in item:
@@ -289,7 +288,6 @@ class InstagramScraper(object):
 
             if (self.media_metadata or self.comments or self.include_location) and self.posts:
                 self.get_relevent_info()
-                #self.save_json(self.LDInfo, '{0}/{1}.json'.format(dst, value))
                 return self.LDInfo
 
     def query_hashtag_gen(self, hashtag):
