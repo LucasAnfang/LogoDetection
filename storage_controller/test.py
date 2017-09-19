@@ -17,4 +17,3 @@ lsc = LogoStorageConnector("IG_SCRAPER")
 # blobs = lsc.download_brand_training_input_data("input", "Patagonia")
 
 blob_name = lsc.upload_brand_training_input_data("Patagonia", "IMAGE_SET_1", isProcessed = False)
-# lsc.log(lsc.input_container(), blob_name, False)

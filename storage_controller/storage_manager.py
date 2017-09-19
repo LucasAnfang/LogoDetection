@@ -94,10 +94,10 @@ class LogoStorageConnector:
 	def _create_container(self, container_name):
 		self.service.create_container(container_name)
 
-	def input_container(self):
+	def _input_container(self):
 		return self.constants.INPUT_CONTAINER_NAME
 
-	def output_container(self):
+	def _output_container(self):
 		return self.constants.OUTPUT_CONTAINER_NAME
 
 	def _get_resource_reference(self, prefix):
@@ -111,7 +111,6 @@ class LogoStorageConnector:
 			self._create_container(container_name)
 		blob_name = self._get_blob_reference(path);
 		self.service.create_blob_from_text(container_name, blob_name, data)
-		# self.log(container_name, blob_name, False)
 		return blob_name
 
 	def _download_data(self, container_name, full_blob_name):
@@ -121,7 +120,7 @@ class LogoStorageConnector:
 		content = blob.content
 		return content
 
-	def retreive_log_entities(self, container_name, path,  processing_status_filter = None):
+	def retreive_log_entities(self, container_name, path, processing_status_filter = None):
 		log_entries = LogEntries()
 		log_path = path + "/log"
 		if self.exists(container_name,log_path):
@@ -144,6 +143,27 @@ class LogoStorageConnector:
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
+	def update_log_entries(self, container_name, full_blob_names, isProcessed):
+		directories = {}
+		for full_blob_name in full_blob_names:
+			path = self.get_blobs_parent_directory(full_blob_name)
+			log_path = path + '/log'
+			if log_path in directories:
+				directories[log_path].append(full_blob_name)
+			else:
+				directories[log_path] = []
+				directories[log_path].append(full_blob_name)
+		for key, value in directories.iteritems():
+			log_entries = LogEntries()
+			if self.exists(container_name, key):
+				log_file = self.service.get_blob_to_text(container_name, key)
+				raw_logs = log_file.content
+				log_entries.deserialize(raw_logs)
+			for full_blob_name in value:
+				log_entries.update(full_blob_name, isProcessed=isProcessed)
+			raw = log_entries.serialize()
+			self.service.create_blob_from_text(container_name, key, raw)
+		
 	def get_blobs_parent_directory(self, full_blob_name):
 		return full_blob_name.rsplit('/', 1)[0]
 			
