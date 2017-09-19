@@ -9,11 +9,20 @@ class LogEntries:
 	def __init__(self):
 		self.log_entries = []
 
-	def append(self, path, processing_status):
+	def append(self, path, isProcessed):
+		processing_status = PROCESSED if isProcessed else UNPROCESSED 
 		dictionary = {}
 		dictionary[PATH] = path
 		dictionary[PROCESSING_STATUS] = processing_status
 		self.log_entries.append(dictionary)
+
+	def update(self, path, isProcessed):
+		processing_status = PROCESSED if isProcessed else UNPROCESSED
+		if(len([x for x in self.log_entries if x[PATH] == path]) == 0):
+			self.append(path, isProcessed)
+		else:
+			entry = [x for x in self.log_entries if x[PATH] == path]
+			entry[PROCESSING_STATUS] = processing_status
 
 	def GetLogs(self, processing_status_filter = None):
 		if(processing_status_filter == None):

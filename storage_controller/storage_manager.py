@@ -31,28 +31,32 @@ class LogoStorageConnector:
 
 	""" Public Interfaces """
 	""" Upload """
-	def upload_brand_training_input_data(self, brand, data):
-		container = self._input_container()
+	def upload_brand_training_input_data(self, brand, data, isProcessed):
+		container_name = self.input_container()
 		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
-		self._upload_data(container, path, data)
+		full_blob_name = self._upload_data(container_name, path, data)
+		self.log(container_name, full_blob_name, isProcessed)
+		return  full_blob_name
 
-	def upload_brand_operational_input_data(self, brand, data):
-		container = self._input_container()
+	def upload_brand_operational_input_data(self, brand, data, isProcessed):
+		container_name = self.input_container()
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		self._upload_data(container, path, data)
+		full_blob_name = self._upload_data(container_name, path, data)
+		self.log(container_name, full_blob_name, isProcessed)
+		return  full_blob_name
 
 	def upload_brand_operational_output_data(self, brand, data):
 		container = self._output_container()
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		self._upload_data(container, path, data)
+		return self._upload_data(container, path, data)
 
 	""" Download """
-	def download_brand_training_input_data(self, brand, action_filter):
+	def download_brand_training_input_data(self, brand, processing_status_filter = None):
 		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
 		blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
 
-	def download_brand_operational_input_data(self, brand, action_filter):
+	def download_brand_operational_input_data(self, brand, processing_status_filter = None):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
 		blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
@@ -63,8 +67,6 @@ class LogoStorageConnector:
 		return blobs
 
 	def get_container_directories(self, container_name):
-		# blobs = self.service.list_blobs(container_name=container_name, delimiter='/')
-		# return [blob.name for blob in blobs.prefixes]
 		bloblistingresult = self.service.list_blobs(container_name=container_name, delimiter='/') 
 		return [blob.name.rsplit('/', 1)[0] for blob in bloblistingresult]
 
@@ -92,10 +94,10 @@ class LogoStorageConnector:
 	def _create_container(self, container_name):
 		self.service.create_container(container_name)
 
-	def _input_container(self):
+	def input_container(self):
 		return self.constants.INPUT_CONTAINER_NAME
 
-	def _output_container(self):
+	def output_container(self):
 		return self.constants.OUTPUT_CONTAINER_NAME
 
 	def _get_resource_reference(self, prefix):
@@ -109,7 +111,7 @@ class LogoStorageConnector:
 			self._create_container(container_name)
 		blob_name = self._get_blob_reference(path);
 		self.service.create_blob_from_text(container_name, blob_name, data)
-		self.log(container_name, blob_name)
+		# self.log(container_name, blob_name, False)
 		return blob_name
 
 	def _download_data(self, container_name, full_blob_name):
@@ -130,7 +132,7 @@ class LogoStorageConnector:
 			log_entries = log_entries.GetLogs(processing_status_filter=processing_status_filter)
 		return log_entries
 
-	def log(self, container_name, full_blob_name):
+	def log(self, container_name, full_blob_name, isProcessed):
 		path = self.get_blobs_parent_directory(full_blob_name)
 		log_path = path + '/log'
 		log_entries = LogEntries()
@@ -138,14 +140,12 @@ class LogoStorageConnector:
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)	
-		log_entries.append(full_blob_name, UNPROCESSED)
+		log_entries.update(full_blob_name, isProcessed=isProcessed)
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
 	def get_blobs_parent_directory(self, full_blob_name):
 		return full_blob_name.rsplit('/', 1)[0]
-
-	# def retrieve_logs(self, container, path)
 			
 	def exists(self, container, full_blob_name = None):
 		return self.service.exists(container, full_blob_name)
