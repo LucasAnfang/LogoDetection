@@ -11,7 +11,7 @@ import json
 from log_entries import *
 
 class LogoStorageConnector:
-	def __init__(self, Interacting_Entity = "Meh"):
+	def __init__(self):
 		try:
 			import config as config
 			self.config = config
@@ -25,9 +25,7 @@ class LogoStorageConnector:
 		self.account = CloudStorageAccount(account_name=config.STORAGE_ACCOUNT_NAME, account_key=config.STORAGE_ACCOUNT_KEY)
 		self.service = self.account.create_block_blob_service()
 		self._create_input_container()
-		self._create_output_container()
-		self.Interacting_Entity = Interacting_Entity
-		
+		self._create_output_container()	
 
 	""" Public Interfaces """
 	""" Upload """
@@ -56,9 +54,10 @@ class LogoStorageConnector:
 		blobs = []
 		container_name = self.constants.INPUT_CONTAINER_NAME
 		if(processing_status_filter != None):
+			print(path)
 			logs = self.retreive_log_entities(container_name, path, processing_status_filter = processing_status_filter)
 			for log in logs:
-				blobs.append(self._download_data(container_name, log[PATH])
+				blobs.append(self._download_data(container_name, log[PATH]))
 		else:
 			blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
@@ -71,7 +70,7 @@ class LogoStorageConnector:
 		if(processing_status_filter != None):
 			logs = self.retreive_log_entities(container_name, path, processing_status_filter = processing_status_filter)
 			for log in logs:
-				blobs.append(self._download_data(container_name, log[PATH])
+				blobs.append(self._download_data(container_name, log[PATH]))
 		else:
 			blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
