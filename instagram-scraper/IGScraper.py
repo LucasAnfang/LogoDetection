@@ -67,8 +67,8 @@ def IG_train(logo_brand, maxImages):
 
     scraper = InstagramScraper(**args)
     scraper.scrape_hashtag()
-    print(args.max_images+ " picutres from #"+ args.train + " saved in ./" + args.train)
-    print("Please ensure all pictutes in ./" + args.train + " dir contain the "+args.train+ "logo")
+    print(str(maxImages)+ " picutres from #"+ logo_brand + " saved in ./" + logo_brand)
+    print("Please ensure all pictutes in ./" + logo_brand+ " dir contain the "+logo_brand+ " logo")
 
 
 def pickledTrainPicsTo_(byteString):
