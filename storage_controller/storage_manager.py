@@ -32,17 +32,17 @@ class LogoStorageConnector:
 	""" Public Interfaces """
 	""" Upload """
 	def upload_brand_training_input_data(self, brand, data, isProcessed):
-		container_name = self.input_container()
+		container_name = self._input_container()
 		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
 		full_blob_name = self._upload_data(container_name, path, data)
-		self.log(container_name, full_blob_name, isProcessed)
+		self.log(full_blob_name, isProcessed)
 		return  full_blob_name
 
 	def upload_brand_operational_input_data(self, brand, data, isProcessed):
-		container_name = self.input_container()
+		container_name = self._input_container()
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
 		full_blob_name = self._upload_data(container_name, path, data)
-		self.log(container_name, full_blob_name, isProcessed)
+		self.log(full_blob_name, isProcessed)
 		return  full_blob_name
 
 	def upload_brand_operational_output_data(self, brand, data):
@@ -53,12 +53,27 @@ class LogoStorageConnector:
 	""" Download """
 	def download_brand_training_input_data(self, brand, processing_status_filter = None):
 		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
-		blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
+		blobs = []
+		container_name = self.constants.INPUT_CONTAINER_NAME
+		if(processing_status_filter != None):
+			logs = self.retreive_log_entities(container_name, path, processing_status_filter = processing_status_filter)
+			for log in logs:
+				blobs.append(self._download_data(container_name, log[PATH])
+		else:
+			blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
 
 	def download_brand_operational_input_data(self, brand, processing_status_filter = None):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
+		# blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
+		blobs = []
+		container_name = self.constants.INPUT_CONTAINER_NAME
+		if(processing_status_filter != None):
+			logs = self.retreive_log_entities(container_name, path, processing_status_filter = processing_status_filter)
+			for log in logs:
+				blobs.append(self._download_data(container_name, log[PATH])
+		else:
+			blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		return blobs
 
 	def download_brand_operational_output_data(self, brand):
@@ -118,7 +133,7 @@ class LogoStorageConnector:
 			self._create_container(container_name)
 		blob = self.service.get_blob_to_text(container_name, full_blob_name)
 		content = blob.content
-		return content
+		return blob
 
 	def retreive_log_entities(self, container_name, path, processing_status_filter = None):
 		log_entries = LogEntries()
@@ -131,7 +146,8 @@ class LogoStorageConnector:
 			log_entries = log_entries.GetLogs(processing_status_filter=processing_status_filter)
 		return log_entries
 
-	def log(self, container_name, full_blob_name, isProcessed):
+	def log(self, full_blob_name, isProcessed):
+		container_name = self._input_container()
 		path = self.get_blobs_parent_directory(full_blob_name)
 		log_path = path + '/log'
 		log_entries = LogEntries()
@@ -143,8 +159,9 @@ class LogoStorageConnector:
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
-	def update_log_entries(self, container_name, full_blob_names, isProcessed):
+	def update_log_entries(self, full_blob_names, isProcessed):
 		directories = {}
+		container_name = self._input_container()
 		for full_blob_name in full_blob_names:
 			path = self.get_blobs_parent_directory(full_blob_name)
 			log_path = path + '/log'
@@ -162,7 +179,7 @@ class LogoStorageConnector:
 			for full_blob_name in value:
 				log_entries.update(full_blob_name, isProcessed=isProcessed)
 			raw = log_entries.serialize()
-			self.service.create_blob_from_text(container_name, key, raw)
+			self.service.create_blob_from_text(container_name, log_path, raw)
 		
 	def get_blobs_parent_directory(self, full_blob_name):
 		return full_blob_name.rsplit('/', 1)[0]

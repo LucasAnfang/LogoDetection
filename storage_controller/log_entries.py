@@ -29,6 +29,9 @@ class LogEntries:
 			return self.log_entries
 		return [x for x in self.log_entries if x[PROCESSING_STATUS] == processing_status_filter]
 
+	def GetUnprocessedBlobNames(self):
+		return [x[UNPROCESSED] for x in self.log_entries if x[PROCESSING_STATUS] == UNPROCESSED]
+
 	def serialize(self):
 		return json.dumps(self.log_entries, indent=4, sort_keys=True, ensure_ascii=False)
 
