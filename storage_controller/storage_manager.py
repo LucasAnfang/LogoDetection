@@ -64,7 +64,6 @@ class LogoStorageConnector:
 
 	def download_brand_operational_input_data(self, brand, processing_status_filter = None):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		# blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
 		blobs = []
 		container_name = self.constants.INPUT_CONTAINER_NAME
 		if(processing_status_filter != None):

@@ -1,25 +1,13 @@
 from storage_manager import LogoStorageConnector
 lsc = LogoStorageConnector()
 
-#lsc.upload_brand_training_input_data("Patagonia", "IMAGE_SET_1")
-# lsc.upload_brand_operational_input_data("Patagonia", "IMAGE_SET_1")
- # lsc.upload_brand_operational_output_data("Patagonia", "IMAGE_SET_1")
-# lsc.download_brand_training_input_data("Patagonia")
-
-# logs = lsc.retreive_log_entities("input", "Patagonia/operational", "Unprocessed")
-# for entity in logs:
-# 	print(" path ", entity['Path']," Processing Status ", entity['Processing_Status'])
-
-# vds = lsc.get_container_directories("input")
-# for entity in vds:
-# 	print('[',entity,']')
-
-
-# blobs = lsc.download_brand_training_input_data("input", "Patagonia")
-
 upload_demo = False
+log_demo = True
+download_demo = True
+
+brand_names = ["Puma", "Lego", "Nike", "Adidas", "Patagonia"]
+
 if(upload_demo == True):
-	brand_names = ["Puma", "Lego", "Nike", "Adidas", "Patagonia"]
 	print("Demo for upload to various directories for", brand_names)
 	for brand_name in brand_names:
 		print("\nUploading ", brand_name, " Training Data [UNPROCESSED]")
@@ -47,10 +35,7 @@ vds = lsc.get_container_directories("input")
 for entity in vds:
 	print('[',entity,']')
 
-
-log_demo = True
 if(log_demo == True):
-	brand_names = ["Puma", "Lego", "Nike", "Adidas", "Patagonia"]
 	print("Demo for analyzing logs for multiple brands and their existing directories", brand_names)
 	for brand_name in brand_names:
 		path = brand_name + "/training"
@@ -73,7 +58,15 @@ if(log_demo == True):
 			print(" path [", entity['Path'],"] Processing Status: [", entity['Processing_Status'], "]")
 		print("=====================================================")
 
-blobs = lsc.download_brand_training_input_data("Patagonia", processing_status_filter="Unprocessed")
-for blob in blobs:
-	print(blob.name)
-	print(blob.content)
+
+if(download_demo == True):
+	print("Demo for downloading data for multiple brands unprocessed input/operational data", brand_names)
+	for brand_name in brand_names:	
+		blobs = lsc.download_brand_training_input_data(brand_name, processing_status_filter="Unprocessed")
+		for blob in blobs:
+			print("blob name:",blob.name)
+			print("blob content:",blob.content)
+		blobs = lsc.download_brand_operational_input_data(brand_name, processing_status_filter="Unprocessed")
+		for blob in blobs:
+			print("blob name:",blob.name)
+			print("blob content:",blob.content)
