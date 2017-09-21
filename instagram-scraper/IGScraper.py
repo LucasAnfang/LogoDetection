@@ -62,8 +62,8 @@ def IG_train(logo_brand, maxImages):
 
     scraper = InstagramScraper(**args)
     scraper.scrape_hashtag()
-    print(args.max_images+ " picutres from #"+ args.train + " saved in ./" + args.train)
-    print("Please ensure all pictutes in ./" + args.train + " dir contain the "+args.train+ "logo")
+    #print(args.max_images+ " picutres from #"+ args.train + " saved in ./" + args.train)
+    #print("Please ensure all pictutes in ./" + args.train + " dir contain the "+args.train+ "logo")
 
 
 def pickledTrainPicsTo_(byteString):
@@ -107,8 +107,8 @@ def unserialize_operate(pickledByteString):
     '''
     byteString = depickle(pickledByteString)
     for picDict in byteString:
-        print picDict[LOGO_NAME]
-        print picDict[OWNER_ID]
+        print(picDict[LOGO_NAME])
+        print(picDict[OWNER_ID])
         im = stringDictToPic(picDict[PICTURE])
         im.show()
 
@@ -157,7 +157,7 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         #for testing, call this to unserialize
         #unserialize_operate(pickledPicList)
         #call luca's function here
-        print "Operate complete"
+        print("Operate complete")
     
 
 
@@ -192,12 +192,12 @@ def main():
             picDir = args.dir
         #check if dir is valid
         if not os.path.isdir(picDir):
-            print "Error: directory invalid"
+            print("Error: directory invalid")
             return
         IG_train_upload(args.train_upload, picDir)
     if args.operate is not None:
         if args.logo is None:
-            print "Please provide a logo name with operate"
+            print("Please provide a logo name with operate")
             return
         else:
             IG_operate(args.logo, args.operate, args.max_images)
