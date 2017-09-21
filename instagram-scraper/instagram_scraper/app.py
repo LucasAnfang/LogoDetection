@@ -448,8 +448,9 @@ class InstagramScraper(object):
             '''
             pictureDict[LOGO_NAME] = self.logo_name
             pictureDict[HAS_LOGO] = None
-            pictureDict[PICTURE] = post['picture']
-            self.LDInfo.append(pictureDict)
+            if 'picture' in post:
+                pictureDict[PICTURE] = post['picture']
+                self.LDInfo.append(pictureDict)
 
     def get_profile_pic(self, dst, executor, future_to_item, user, username):
         # Download the profile pic if not the default.
