@@ -237,7 +237,7 @@ class InstagramScraper(object):
             self.last_scraped_filemtime = 0
             future_to_item = {}
 
-            dst = self.make_dst_dir(value)
+            #dst = self.make_dst_dir(value)
 
             if self.include_location:
                 media_exec = concurrent.futures.ThreadPoolExecutor(max_workers=5)
@@ -260,8 +260,6 @@ class InstagramScraper(object):
                         'size': picture.size,
                         'mode': picture.mode,
                     }
-                    print "pic dict"
-                    #print picDict
                     item['picture'] = picDict
 
                 if self.include_location and 'location' not in item:
@@ -277,6 +275,7 @@ class InstagramScraper(object):
                 if self.maximum != 0 and iter >= self.maximum:
                     break
             
+            '''
             if future_to_item:
                 for future in tqdm.tqdm(concurrent.futures.as_completed(future_to_item), total=len(future_to_item),
                                         desc='Downloading', disable=self.quiet):
@@ -286,6 +285,7 @@ class InstagramScraper(object):
                         self.logger.warning(
                             'Media for {0} at {1} generated an exception: {2}'.format(value, item['urls'], future.exception()))
 
+            '''
             if (self.media_metadata or self.comments or self.include_location) and self.posts:
                 self.get_relevent_info()
                 return self.LDInfo

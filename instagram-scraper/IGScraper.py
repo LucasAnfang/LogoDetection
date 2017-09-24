@@ -1,13 +1,10 @@
 import argparse
 import os
-import pickle
 import textwrap
 
-from PIL import Image
+import data_transformer
 
 from instagram_scraper import InstagramScraper
-from instagram_scraper.constants import *
-from instagram_scraper.dictConstants import *
 
 #class IGScrapper(object):
 
@@ -17,26 +14,7 @@ from instagram_scraper.dictConstants import *
 
 '''
 
-def toPickle(thingToPickle):
-    return pickle.dumps(thingToPickle)
 
-def depickle(thingToDepickle):
-    return pickle.loads(thingToDepickle)
-
-def picToStringDict(picture):
-    return {
-        'pixels': picture.tobytes(),
-        'size': picture.size,
-        'mode': picture.mode,
-    }
-
-def stringDictToPic(imageDict):
-    return Image.frombytes(imageDict['mode'], imageDict['size'], imageDict['pixels'])
-
-def compress():
-    '''
-        TODO
-    '''
 def IG_train(logo_brand, maxImages):
     '''
         Scrapes max Images from logo_brand name and saves it to a directory named
@@ -67,21 +45,11 @@ def IG_train(logo_brand, maxImages):
 
     scraper = InstagramScraper(**args)
     scraper.scrape_hashtag()
-    #print(args.max_images+ " picutres from #"+ args.train + " saved in ./" + args.train)
-    #print("Please ensure all pictutes in ./" + args.train + " dir contain the "+args.train+ "logo")
+    print(str(maxImages)+ " picutres from #"+ logo_brand + " saved in " + logo_brand +" folder")
+    print("Please ensure all pictutes in " + logo_brand + " dir contain the "+logo_brand+ " logo")
 
 
-def pickledTrainPicsTo_(byteString):
-    '''
-        Takes pickled string of training pictures
-        depickles
-        converts to PIL images
-        Right now it just shows it
-    '''
-    unpickledByteString = depickle(byteString)
-    for picString in unpickledByteString:
-        im = stringDictToPic(picString)
-        im.show()
+
 
 def IG_train_upload(logo_brand, directory):
     '''
@@ -91,34 +59,20 @@ def IG_train_upload(logo_brand, directory):
     '''
     picDictList = []
     for pictureName in os.listdir(directory):
-        try:
-            picture = Image.open(directory + '/'+ pictureName)
-        except IOError:
+        picture = data_transformer.picFileToImageRepresentation(directory + '/'+ pictureName)
+        if picture is None:
             continue
         #compress
-        picDictList.append(picToStringDict(picture));
+        picDictList.append(data_transformer.picToStringDict(picture));
     #if dropping pickle,
     #send picDictList to Lucas in json 
     #pickle list to serialize
-    byteString = toPickle(picDictList)
+    byteString = data_transformer.toPickle(picDictList)
+    #call Lucas's function here
 
     #uncomment to test unpickling
-    pickledTrainPicsTo_(byteString)
-    #call Lucas's function here
+    data_transformer.unserialize_train(byteString)
     
-def unserialize_operate(pickledByteString):
-    '''
-        Take in pickled byte string that was created qith IG_operate
-        unpickle
-        loops through pic dict
-        see dictConstants.py for constants
-    '''
-    byteString = depickle(pickledByteString)
-    for picDict in byteString:
-        print(picDict[LOGO_NAME])
-        print(picDict[OWNER_ID])
-        im = stringDictToPic(picDict[PICTURE])
-        im.show()
 
 
 
@@ -135,9 +89,10 @@ def IG_operate(logo_brand, hashtagList, maxImages):
 
     picList = [] # list of dictionaries of metadata + string version of list
     destinationFolder = './'
+    
     for tag in hashtagList:
-    	print "tag " + tag
         args = {
+            #use a list here instead of a loop
             'username': [tag],
             'verbose': 0,
             'login_user': None,
@@ -164,9 +119,9 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         listScraperReturned = scraper.scrape_hashtag_operate()
         if listScraperReturned is not None:
         	picList.extend(listScraperReturned)
-        pickledPicList = toPickle(picList)
+        pickledPicList = data_transformer.toPickle(picList)
         #for testing, call this to unserialize
-    #unserialize_operate(pickledPicList)
+    data_transformer.unserialize_operate(pickledPicList)
     #call luca's function here
     print "Operate complete"
     
@@ -184,8 +139,8 @@ def main():
     parser.add_argument('--train', '-t', default=None, help='Scrape for training pictures on hashtag provided')
     parser.add_argument('--max_images', '-m', type=int, default=500, help='Maximum number of images scraped for')
     #train-upload
-    parser.add_argument('--train-upload', '--train_upload', '-tu', default=None, help='logo brand name to upload directory into networed file system')
-    parser.add_argument('--dir', '-d', default=None, help='Directory pictures are stored in on local machine')
+    parser.add_argument('--train-upload', '--train_upload', '-tu', default=None, help='logo brand name to upload directory into networked file system')
+    parser.add_argument('--dir', '-d', default=None, help='Directory pictures are already stored in on local machine')
     #operate
     parser.add_argument('--operate', '-o', nargs='+', default=None, help='Input list of hashtags (in ) to scrape on with -l logo.')
     parser.add_argument('--logo', '-l', default=None, help='Logo name to operate on')
@@ -211,9 +166,6 @@ def main():
         	print args.operate
         	IG_operate(args.logo, args.operate, args.max_images)
         	return
-
-        
-   
 
 
 if __name__ == '__main__':
