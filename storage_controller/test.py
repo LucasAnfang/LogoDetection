@@ -64,9 +64,9 @@ if(download_demo == True):
 	for brand_name in brand_names:	
 		blobs = lsc.download_brand_training_input_data(brand_name, processing_status_filter="Unprocessed")
 		for blob in blobs:
-			print("blob name:",blob.name)
-			print("blob content:",blob.content)
+			print("  blob name:",blob.name)
+			print("    blob content:",blob.content)
 		blobs = lsc.download_brand_operational_input_data(brand_name, processing_status_filter="Unprocessed")
 		for blob in blobs:
-			print("blob name:",blob.name)
-			print("blob content:",blob.content)
+			print("  blob name:",blob.name)
+			print("    blob content:",blob.content)
