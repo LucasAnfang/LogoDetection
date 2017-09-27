@@ -1,7 +1,9 @@
 import sys
+import os
 import argparse
 import textwrap
-from src.storage_controller.instagram_post_entity import InstagramPostEntities
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
+import src.storage_controller.instagram_post_entity.InstagramPostEntities
 from instagram_scraper import InstagramScraper
 #../storage_controller/
 
