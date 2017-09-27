@@ -1,7 +1,14 @@
 import argparse
 import textwrap
-from instagram_post_entities import InstagramPostEntities
+from .storage_controller.instagram_post_entity import InstagramPostEntities
 from instagram_scraper import InstagramScraper
+#../storage_controller/
+
+"""
+TRAIN: python IGScraperTool.py -t patagonia -m 10
+TRAIN UPLOAD: python IGScraperTool.py -tu patagonia
+OPERATE:  python IGScraperTool.py  -o patagonia nature -l patagonia -m 2
+"""
 
 def IG_train(logo_brand, maxImages):
     '''
@@ -87,7 +94,7 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         }
         scraper = InstagramScraper(**args)
         ipe.extend(scraper.scrape_hashtag_operate())
-    print "Operate complete"
+    print("Operate complete")
     print(ipe.serialize())
 
 def main():
@@ -127,7 +134,7 @@ def main():
             print("Please provide a logo name with operate")
             return
         else:
-        	print args.operate
+        	print(args.operate)
         	IG_operate(args.logo, args.operate, args.max_images)
         	return
 
