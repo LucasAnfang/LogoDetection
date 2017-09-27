@@ -1,4 +1,5 @@
 import json
+import os
 from PIL import Image
 DIMENSIONS = 'dimensions'
 CAPTION = 'caption'
@@ -24,9 +25,11 @@ class InstagramPostEntities:
 		if(self.isTraining == self.isClassification):
 			raise ValueError('InstagramPostEntities must be either for classification or training')
 
-	def append(self, post, brand_name = None):
+	def append(self, post = None, brand_name = None, serialized_image = None):
 		ig_post_entity = {}
 		if(isClassification == True):
+			if(post == None):
+				raise ValueError('No post supplied')
 	        if "id" in post:
 	           ig_post_entity[PICTURE_ID] = post['id']
 			if "dimensions" in post:
@@ -49,8 +52,31 @@ class InstagramPostEntities:
 			ig_post_entity[IMAGE_CONTEXT] = None
 			ig_post_entity[PICTURE] = post['picture']
 		if(isTraining == True):
-			
+			if(serialized_image == None):
+				raise ValueError('No serialized image supplied')
+			ig_post_entity[PICTURE] = serialized_image
 		self.posts.append(ig_post_entity)
+
+	def extend(self, post_list):
+		if post_list is not None:
+			self.posts.extend(post_list)
+
+	def archiveImageDirectory(self, directory_path):
+		if(self.isTraining == False):
+			raise ValueError('You can only archive if this class is said to be for training')
+		for image_name in os.listdir(directory_path):
+			picture = openImage('{}/{}'.format(directory_path,image_name))
+			if picture is None:
+				continue
+			serialized_image = self.serializeImage(picture)
+			self.append(self.serialized_image = serialized_image)
+
+	def openImage(fileName):
+	try:
+		picture = Image.open(fileName)
+		return picture
+	except IOError:
+		return None
 
 	def serializeImage(self, picture):
 	return {
@@ -64,6 +90,7 @@ class InstagramPostEntities:
 
 	def getImageAtIndex(self, index):
 		""" return deserialized image """
+		return self.deserializeImage(self.posts[index][PICTURE])
 
 	def setImageContextAtIndex(self, index, image_context):
 		self.posts[index][IMAGE_CONTEXT] = image_context
