@@ -1,6 +1,7 @@
+import sys
 import argparse
 import textwrap
-from .storage_controller.instagram_post_entity import InstagramPostEntities
+from src.storage_controller.instagram_post_entity import InstagramPostEntities
 from instagram_scraper import InstagramScraper
 #../storage_controller/
 
