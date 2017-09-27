@@ -12,34 +12,44 @@ PICTURE = 'picture'
 PICTURE_ID = "picture_id"
 """ NEW """
 IMAGE_CONTEXT = "image_context"
+TYPE = "processing_type"
+TYPE_TRAINING = "training"
+TYPE_CLASSIFICATION = "classification"
 
 class InstagramPostEntities:
-	def __init__(self):
+	def __init__(self, isTraining = False, isClassification = False):
 		self.posts = []
+		self.isTraining = isTraining
+		self.isClassification = isClassification
+		if(self.isTraining == self.isClassification):
+			raise ValueError('InstagramPostEntities must be either for classification or training')
 
-	def append(self, post, brand_name):
-        ig_post_entity = {}
-        if "id" in post:
-           ig_post_entity[PICTURE_ID] = post['id']
-		if "dimensions" in post:
-			ig_post_entity[DIMENSIONS] = post['dimensions']
-		if "edge_media_to_caption" in post:
-			ig_post_entity[CAPTION] = post["edge_media_to_caption"]["edges"][0]["node"]["text"]
-		if "owner" in post:
-			ig_post_entity[OWNER_ID] = post["owner"]["id"]
-		if "tags" in post:
-			ig_post_entity[TAGS] = post["tags"]
-		if "taken_at_timestamp" in post:
-			ig_post_entity[TIME] = post["taken_at_timestamp"]
-		if "location" in post and post['location'] is not None:
-			if "name" in post["location"]:
-				ig_post_entity[LOCATION] = post["location"]["name"]
-		else:
-			ig_post_entity[LOCATION] = None
-		ig_post_entity[LOGO_NAME] = brand_name
-		ig_post_entity[HAS_LOGO] = None
-		ig_post_entity[IMAGE_CONTEXT] = None
-		ig_post_entity[PICTURE] = post['picture']
+	def append(self, post, brand_name = None):
+		ig_post_entity = {}
+		if(isClassification == True):
+	        if "id" in post:
+	           ig_post_entity[PICTURE_ID] = post['id']
+			if "dimensions" in post:
+				ig_post_entity[DIMENSIONS] = post['dimensions']
+			if "edge_media_to_caption" in post:
+				ig_post_entity[CAPTION] = post["edge_media_to_caption"]["edges"][0]["node"]["text"]
+			if "owner" in post:
+				ig_post_entity[OWNER_ID] = post["owner"]["id"]
+			if "tags" in post:
+				ig_post_entity[TAGS] = post["tags"]
+			if "taken_at_timestamp" in post:
+				ig_post_entity[TIME] = post["taken_at_timestamp"]
+			if "location" in post and post['location'] is not None:
+				if "name" in post["location"]:
+					ig_post_entity[LOCATION] = post["location"]["name"]
+			else:
+				ig_post_entity[LOCATION] = None
+			ig_post_entity[LOGO_NAME] = brand_name
+			ig_post_entity[HAS_LOGO] = None
+			ig_post_entity[IMAGE_CONTEXT] = None
+			ig_post_entity[PICTURE] = post['picture']
+		if(isTraining == True):
+			
 		self.posts.append(ig_post_entity)
 
 	def serializeImage(self, picture):
