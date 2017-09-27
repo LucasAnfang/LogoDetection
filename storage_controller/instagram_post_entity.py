@@ -61,11 +61,11 @@ class InstagramPostEntities:
 		if post_list is not None:
 			self.posts.extend(post_list)
 
-	def archiveImageDirectory(self, directory_path):
+	def archiveImageDirectory(self, directory):
 		if(self.isTraining == False):
 			raise ValueError('You can only archive if this class is said to be for training')
-		for image_name in os.listdir(directory_path):
-			picture = openImage('{}/{}'.format(directory_path,image_name))
+		for image_name in os.listdir(directory):
+			picture = openImage('{}/{}'.format(directory,image_name))
 			if picture is None:
 				continue
 			serialized_image = self.serializeImage(picture)
