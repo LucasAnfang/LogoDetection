@@ -4,6 +4,7 @@ import argparse
 import textwrap
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
 from src.storage_controller.instagram_post_entity import InstagramPostEntities
+from src.storage_controller.storage_manager import LogoStorageConnector
 from instagram_scraper import InstagramScraper
 #../storage_controller/
 
@@ -54,9 +55,12 @@ def IG_train_upload(logo_brand, directory):
         ***ASSUMES HUMAN HAS INSURED THAT ALL PICS CONTAIN <logo_brand>***
         takes the directory './<logo_brand>' 
     '''
+
+    lsc = LogoStorageConnector()
     ipe = InstagramPostEntities(isTraining=True)
     ipe.archiveImageDirectory(directory)
-    print(ipe.serialize())
+    # print(ipe.serialize())
+    lsc.upload_brand_training_input_data(logo_brand, ipe.serialize(), isProcessed = False)
 
 def IG_operate(logo_brand, hashtagList, maxImages):
     '''
@@ -67,6 +71,8 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         compreses and serializes
         Calls Lucas's functions
     '''
+    lsc = LogoStorageConnector()
+
     #saves it to director
     ipe = InstagramPostEntities(isClassification=True)
     
@@ -98,7 +104,9 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         scraper = InstagramScraper(**args)
         ipe.extend(scraper.scrape_hashtag_operate())
     print("Operate complete")
-    print(ipe.serialize())
+    #print(ipe.serialize())
+    lsc.upload_brand_operational_input_data(logo_brand, ipe.serialize(), isProcessed = False)
+
 
 def main():
     parser = argparse.ArgumentParser(

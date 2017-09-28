@@ -1,6 +1,8 @@
 import json
+import pickle
 import os
 from PIL import Image
+import base64
 DIMENSIONS = 'dimensions'
 CAPTION = 'caption'
 OWNER_ID = 'owner_id'
@@ -27,7 +29,7 @@ class InstagramPostEntities:
 
 	def append(self, post = None, brand_name = None, serialized_image = None):
 		ig_post_entity = {}
-		if(isClassification == True):
+		if(self.isClassification == True):
 			if(post == None):
 				raise ValueError('No post supplied')
 			if "id" in post:
@@ -51,13 +53,14 @@ class InstagramPostEntities:
 			ig_post_entity[HAS_LOGO] = None
 			ig_post_entity[IMAGE_CONTEXT] = None
 			ig_post_entity[PICTURE] = post['picture']
-		if(isTraining == True):
+		if(self.isTraining == True):
 			if(serialized_image == None):
 				raise ValueError('No serialized image supplied')
 			ig_post_entity[PICTURE] = serialized_image
 		self.posts.append(ig_post_entity)
 
 	def extend(self, post_list):
+		# print("Extending the list with elements", post_list)
 		if post_list is not None:
 			self.posts.extend(post_list)
 
@@ -65,13 +68,13 @@ class InstagramPostEntities:
 		if(self.isTraining == False):
 			raise ValueError('You can only archive if this class is said to be for training')
 		for image_name in os.listdir(directory):
-			picture = openImage('{}/{}'.format(directory,image_name))
+			picture = self.openImage('{}/{}'.format(directory,image_name))
 			if picture is None:
 				continue
 			serialized_image = self.serializeImage(picture)
 			self.append(serialized_image = serialized_image)
 
-	def openImage(fileName):
+	def openImage(self, fileName):
 		try:
 			picture = Image.open(fileName)
 			return picture
@@ -80,10 +83,13 @@ class InstagramPostEntities:
 
 	def serializeImage(self, picture):
 		return {
-			'pixels': picture.tobytes(),
+			'pixels': base64.encodestring(picture.tobytes()),
 			'size': picture.size,
 			'mode': picture.mode,
 		}
+
+	def deserializeImage(self, serialized_image):
+		return Image.frombytes(serialized_image['mode'], serialized_image['size'], base64.decodestring(serialized_image['pixels']))
 
 	def size(self):
 		return len(self.posts)
@@ -98,11 +104,8 @@ class InstagramPostEntities:
 	def setHasLogoAtIndex(self, index, has_logo):
 		self.posts[index][HAS_LOGO] = has_logo
 
-	def deserializeImage(self, serialized_image):
-		return Image.frombytes(serialized_image['mode'], serialized_image['size'], serialized_image['pixels'])
-
 	def serialize(self):
-		return json.dumps(self.posts, indent=4, sort_keys=True, ensure_ascii=False)
+		return json.dumps(self.posts, indent=4, ensure_ascii=False)
 
 	def deserialize(self, serialized_entity):
 		self.posts = json.loads(serialized_entity)

@@ -114,7 +114,7 @@ class LogoStorageConnector:
 		return self.constants.OUTPUT_CONTAINER_NAME
 
 	def _get_resource_reference(self, prefix):
-		return '{}/{}=={}'.format(prefix, str(uuid.uuid4())[:8], datetime.datetime.now().strftime("%m-%d-%Y %I:%M%p"))
+		return '{}/{}=={}.txt'.format(prefix, str(uuid.uuid4())[:8], datetime.datetime.now().strftime("%m-%d-%Y %I:%M%p"))
 
 	def _get_blob_reference(self, prefix='blob'):
 		return self._get_resource_reference(prefix)
@@ -135,7 +135,7 @@ class LogoStorageConnector:
 
 	def retreive_log_entities(self, container_name, path, processing_status_filter = None):
 		log_entries = LogEntries()
-		log_path = path + "/log"
+		log_path = path + "/log.txt"
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
@@ -147,7 +147,7 @@ class LogoStorageConnector:
 	def log(self, full_blob_name, isProcessed):
 		container_name = self._input_container()
 		path = self.get_blobs_parent_directory(full_blob_name)
-		log_path = path + '/log'
+		log_path = path + '/log.txt'
 		log_entries = LogEntries()
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
@@ -162,7 +162,7 @@ class LogoStorageConnector:
 		container_name = self._input_container()
 		for full_blob_name in full_blob_names:
 			path = self.get_blobs_parent_directory(full_blob_name)
-			log_path = path + '/log'
+			log_path = path + '/log.txt'
 			if log_path in directories:
 				directories[log_path].append(full_blob_name)
 			else:

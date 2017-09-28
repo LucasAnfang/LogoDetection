@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import gzip
 import argparse
 import codecs
 import errno
@@ -8,13 +8,14 @@ import glob
 from operator import itemgetter
 import json
 import logging.config
-import pickle
+import cPickle as pickle
 import os
 import re
 import sys
 import textwrap
 import time
 import warnings
+import base64
 
 import concurrent.futures
 import requests
@@ -24,8 +25,8 @@ from instagram_scraper.constants import *
 from instagram_scraper.dictConstants import *
 
 from PIL import Image
-import urllib
-from io import StringIO
+import urllib, cStringIO
+import StringIO
 
 try:
     reload(sys)  # Python 2.7
@@ -256,8 +257,12 @@ class InstagramScraper(object):
                     picURL = str(item['urls'][0])
                     file = cStringIO.StringIO(urllib.urlopen(picURL).read())
                     picture = Image.open(file)
+                    out = StringIO.StringIO()
+                    with gzip.GzipFile(fileobj=out, mode="w") as f:
+                      f.write(picture.tobytes())
+                    out.getvalue()
                     picDict = {
-                        'pixels': picture.tobytes(),
+                        'pixels': base64.encodestring(out.getvalue()),
                         'size': picture.size,
                         'mode': picture.mode,
                     }
