@@ -255,18 +255,19 @@ class InstagramScraper(object):
                     #print "item"
                     #get url from item 
                     picURL = str(item['urls'][0])
-                    file = cStringIO.StringIO(urllib.urlopen(picURL).read())
-                    picture = Image.open(file)
-                    out = StringIO.StringIO()
-                    with gzip.GzipFile(fileobj=out, mode="w") as f:
-                      f.write(picture.tobytes())
-                    out.getvalue()
-                    picDict = {
-                        'pixels': base64.encodestring(out.getvalue()),
-                        'size': picture.size,
-                        'mode': picture.mode,
-                    }
-                    item['picture'] = picDict
+                    # file = cStringIO.StringIO(urllib.urlopen(picURL).read())
+                    # picture = Image.open(file)
+                    # out = StringIO.StringIO()
+                    # with gzip.GzipFile(fileobj=out, mode="w") as f:
+                    #   f.write(picture.tobytes())
+                    # out.getvalue()
+                    # picDict = {
+                    #     'pixels': base64.encodestring(out.getvalue()),
+                    #     'size': picture.size,
+                    #     'mode': picture.mode,
+                    # }
+                    # item['picture'] = picDict
+                    item['picture_url'] = picURL
 
                 if self.include_location and 'location' not in item:
                     media_exec.submit(self.__get_location, item)
@@ -454,8 +455,9 @@ class InstagramScraper(object):
             '''
             pictureDict[LOGO_NAME] = self.logo_name
             pictureDict[HAS_LOGO] = None
-            if 'picture' in post:
-                pictureDict[PICTURE] = post['picture']
+            if 'picture_url' in post:
+                # pictureDict[PICTURE] = post['picture']
+                pictureDict['picture_url'] = post['picture_url']
                 self.LDInfo.append(pictureDict)
 
     def get_profile_pic(self, dst, executor, future_to_item, user, username):
