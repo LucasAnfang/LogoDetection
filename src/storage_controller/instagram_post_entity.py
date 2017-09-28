@@ -30,8 +30,8 @@ class InstagramPostEntities:
 		if(isClassification == True):
 			if(post == None):
 				raise ValueError('No post supplied')
-	        if "id" in post:
-	           ig_post_entity[PICTURE_ID] = post['id']
+			if "id" in post:
+				ig_post_entity[PICTURE_ID] = post['id']
 			if "dimensions" in post:
 				ig_post_entity[DIMENSIONS] = post['dimensions']
 			if "edge_media_to_caption" in post:
@@ -69,21 +69,21 @@ class InstagramPostEntities:
 			if picture is None:
 				continue
 			serialized_image = self.serializeImage(picture)
-			self.append(self.serialized_image = serialized_image)
+			self.append(serialized_image = serialized_image)
 
 	def openImage(fileName):
-	try:
-		picture = Image.open(fileName)
-		return picture
-	except IOError:
-		return None
+		try:
+			picture = Image.open(fileName)
+			return picture
+		except IOError:
+			return None
 
 	def serializeImage(self, picture):
-	return {
-		'pixels': picture.tobytes(),
-		'size': picture.size,
-		'mode': picture.mode,
-	}
+		return {
+			'pixels': picture.tobytes(),
+			'size': picture.size,
+			'mode': picture.mode,
+		}
 
 	def size(self):
 		return len(self.posts)
