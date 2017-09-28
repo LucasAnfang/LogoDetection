@@ -8,7 +8,7 @@ import glob
 from operator import itemgetter
 import json
 import logging.config
-import cPickle as pickle
+import pickle
 import os
 import re
 import sys
@@ -24,7 +24,8 @@ from instagram_scraper.constants import *
 from instagram_scraper.dictConstants import *
 
 from PIL import Image
-import urllib, cStringIO
+import urllib
+from io import StringIO
 
 try:
     reload(sys)  # Python 2.7
@@ -693,7 +694,7 @@ class InstagramScraper(object):
     @staticmethod
     def save_json(data, dst='./'):
         """Saves the data to a json file."""
-        print "in json"
+        print("in json")
         if data:
             with open(dst, 'wb') as f:
                 json.dump(data, codecs.getwriter('utf-8')(f), indent=4, sort_keys=True, ensure_ascii=False)

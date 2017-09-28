@@ -3,7 +3,7 @@ import os
 import argparse
 import textwrap
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
-import src.storage_controller.instagram_post_entity.InstagramPostEntities
+from src.storage_controller.instagram_post_entity import InstagramPostEntities
 from instagram_scraper import InstagramScraper
 #../storage_controller/
 
@@ -137,9 +137,9 @@ def main():
             print("Please provide a logo name with operate")
             return
         else:
-        	print(args.operate)
-        	IG_operate(args.logo, args.operate, args.max_images)
-        	return
+            print(args.operate)
+            IG_operate(args.logo, args.operate, args.max_images)
+            return
 
 if __name__ == '__main__':
     main()
