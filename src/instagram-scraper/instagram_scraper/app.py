@@ -255,8 +255,8 @@ class InstagramScraper(object):
                     #print "item"
                     #get url from item 
                     picURL = str(item['urls'][0])
-                    # file = cStringIO.StringIO(urllib.urlopen(picURL).read())
-                    # picture = Image.open(file)
+                    file = cStringIO.StringIO(urllib.urlopen(picURL).read())
+                    picture = Image.open(file)
                     # out = StringIO.StringIO()
                     # with gzip.GzipFile(fileobj=out, mode="w") as f:
                     #   f.write(picture.tobytes())
@@ -266,7 +266,7 @@ class InstagramScraper(object):
                     #     'size': picture.size,
                     #     'mode': picture.mode,
                     # }
-                    # item['picture'] = picDict
+                    item['picture'] = picture
                     item['picture_url'] = picURL
 
                 if self.include_location and 'location' not in item:
@@ -431,8 +431,8 @@ class InstagramScraper(object):
 
         for post in self.posts:
             pictureDict = {}
-            #if "id" in post:
-            #    pictureDict[PICTURE_ID] = post['id']
+            if "id" in post:
+               pictureDict['picture_id'] = post['id']
             if "dimensions" in post:
                 pictureDict[DIMENSIONS] = post['dimensions']
             if "edge_media_to_caption" in post:
@@ -456,7 +456,7 @@ class InstagramScraper(object):
             pictureDict[LOGO_NAME] = self.logo_name
             pictureDict[HAS_LOGO] = None
             if 'picture_url' in post:
-                # pictureDict[PICTURE] = post['picture']
+                pictureDict[PICTURE] = post['picture']
                 pictureDict['picture_url'] = post['picture_url']
                 self.LDInfo.append(pictureDict)
 

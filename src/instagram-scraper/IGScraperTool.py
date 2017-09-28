@@ -105,7 +105,8 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         ipe.extend(scraper.scrape_hashtag_operate())
     print("Operate complete")
     #print(ipe.serialize())
-    lsc.upload_brand_operational_input_data(logo_brand, ipe.serialize(), isProcessed = False)
+    # lsc.upload_brand_operational_input_data(logo_brand, ipe.serialize(), isProcessed = False)
+    lsc.upload_brand_operational_input_IPE(logo_brand, ipe, isProcessed = False)
 
 
 def main():

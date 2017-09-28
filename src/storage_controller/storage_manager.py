@@ -9,6 +9,7 @@ import uuid
 import datetime
 import json
 from log_entries import *
+from instagram_post_entity import InstagramPostEntities
 
 class LogoStorageConnector:
 	def __init__(self):
@@ -42,6 +43,30 @@ class LogoStorageConnector:
 		full_blob_name = self._upload_data(container_name, path, data)
 		self.log(full_blob_name, isProcessed)
 		return  full_blob_name
+
+	def upload_brand_training_input_IPE(self, brand, IPE, isProcessed):
+		container_name = self._input_container()
+		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
+		full_blob_name = self._upload_data(container_name, path, data)
+		self.log(full_blob_name, isProcessed)
+		return  full_blob_name
+
+	def upload_brand_operational_input_IPE(self, brand, IPE, isProcessed):
+		container_name = self._input_container()
+		base_path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
+		blob_name = self._get_blob_reference(base_path)
+		images_dir_path = '{}=={}'.format(blob_name, "images")
+		for element in IPE.posts:
+			print(element.keys())
+			if('picture' in element and 'picture_id' in element):
+				path = '{}/{}.jpg'.format(images_dir_path, element['picture_id'])
+				self._upload_and_compress_image(container_name, path, element['picture'])
+				element.pop('picture', None)
+				element['image_path'] = path
+				print("uploading image to path", path)
+		self._upload_data(container_name, base_path, IPE.serialize(), blob_name=blob_name)
+		self.log(blob_name, isProcessed)
+		return  blob_name
 
 	def upload_brand_operational_output_data(self, brand, data):
 		container = self._output_container()
@@ -119,12 +144,20 @@ class LogoStorageConnector:
 	def _get_blob_reference(self, prefix='blob'):
 		return self._get_resource_reference(prefix)
 
-	def _upload_data(self, container_name, path, data):
+	def _upload_data(self, container_name, path, data, blob_name = None):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-		blob_name = self._get_blob_reference(path);
+		if not (blob_name == None):
+			blob_name = self._get_blob_reference(path);
 		self.service.create_blob_from_text(container_name, blob_name, data)
 		return blob_name
+
+	def _upload_and_compress_image(self, container_name, full_blob_name, data):
+		if not(self.exists(container_name)):
+			self._create_container(container_name)
+			bytes = data.getbytes()
+		self.service.create_blob_from_bytes(container_name, full_blob_name, bytes)
+		return full_blob_name
 
 	def _download_data(self, container_name, full_blob_name):
 		if not(self.exists(container_name)):
