@@ -10,6 +10,8 @@ import datetime
 import json
 from log_entries import *
 from instagram_post_entity import InstagramPostEntities
+from io import BytesIO
+from PIL import Image
 
 class LogoStorageConnector:
 	def __init__(self):
@@ -59,11 +61,12 @@ class LogoStorageConnector:
 		for element in IPE.posts:
 			print(element.keys())
 			if('picture' in element and 'picture_id' in element):
-				path = '{}/{}.jpg'.format(images_dir_path, element['picture_id'])
+				path = '{}/{}.png'.format(images_dir_path, element['picture_id'])
 				self._upload_and_compress_image(container_name, path, element['picture'])
 				element.pop('picture', None)
 				element['image_path'] = path
 				print("uploading image to path", path)
+		print("supplying blob name", blob_name)
 		self._upload_data(container_name, base_path, IPE.serialize(), blob_name=blob_name)
 		self.log(blob_name, isProcessed)
 		return  blob_name
@@ -149,13 +152,17 @@ class LogoStorageConnector:
 			self._create_container(container_name)
 		if not (blob_name == None):
 			blob_name = self._get_blob_reference(path);
+			print("Getting new blob name", blob_name)
 		self.service.create_blob_from_text(container_name, blob_name, data)
 		return blob_name
 
 	def _upload_and_compress_image(self, container_name, full_blob_name, data):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-			bytes = data.getbytes()
+
+		with BytesIO() as output:
+			data.save(output, 'PNG')
+			bytes = output.getvalue()
 		self.service.create_blob_from_bytes(container_name, full_blob_name, bytes)
 		return full_blob_name
 
