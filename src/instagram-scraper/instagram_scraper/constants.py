@@ -21,3 +21,5 @@ FOLLOWING_URL = 'https://www.instagram.com/graphql/query/?query_id=1787454532300
 FOLLOWERS_URL = 'https://www.instagram.com/graphql/query/?query_id=17851374694183129&id={{accountId}}&first={{count}}';
 
 USER_URL = "https://www.instagram.com/graphql/query/?query_id=17880160963012870&id={0}&first=10&after="
+
+PICTURE_URL_BASE = "https://scontent-lax3-1.cdninstagram.com/t51.2885-15/e35/"
