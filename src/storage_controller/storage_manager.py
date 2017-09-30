@@ -32,49 +32,46 @@ class LogoStorageConnector:
 
 	""" Public Interfaces """
 	""" Upload """
-	def upload_brand_training_input_data(self, brand, data, isProcessed):
-		container_name = self._input_container()
-		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
-		full_blob_name = self._upload_data(container_name, path, data)
-		self.log(full_blob_name, isProcessed)
-		return  full_blob_name
+	# def upload_brand_training_input_data(self, brand, data, isProcessed):
+	# 	container_name = self._input_container()
+	# 	#path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
+	# 	path = self._create_path_to_bucket(brand, self.constants.TRAINING_DIRECTORY_NAME)
+	# 	full_blob_name = self._upload_data(container_name, path, data)
+	# 	self.log(full_blob_name, isProcessed)
+	# 	return  full_blob_name
 
-	def upload_brand_operational_input_data(self, brand, data, isProcessed):
-		container_name = self._input_container()
-		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		full_blob_name = self._upload_data(container_name, path, data)
-		self.log(full_blob_name, isProcessed)
-		return  full_blob_name
+	# def upload_brand_operational_input_data(self, brand, data, isProcessed):
+	# 	container_name = self._input_container()
+	# 	path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
+	# 	full_blob_name = self._upload_data(container_name, path, data)
+	# 	self.log(full_blob_name, isProcessed)
+	# 	return  full_blob_name
 
 	def upload_brand_training_input_IPE(self, brand, IPE, isProcessed):
-		container_name = self._input_container()
-		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
-		full_blob_name = self._upload_data(container_name, path, data)
-		self.log(full_blob_name, isProcessed)
-		return  full_blob_name
+		return self.upload_IPE_to_bucket(self._input_container(), brand, self.constants.TRAINING_DIRECTORY_NAME, IPE, isProcessed)
 
 	def upload_brand_operational_input_IPE(self, brand, IPE, isProcessed):
-		container_name = self._input_container()
-		base_path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		blob_name = self._get_blob_reference(base_path)
-		images_dir_path = '{}=={}'.format(blob_name, "images")
+		return self.upload_IPE_to_bucket(self._input_container(), brand, self.constants.OPERATIONAL_DIRECTORY_NAME, IPE, isProcessed)
+
+	def upload_IPE_to_bucket(self, container_name, brand, directory, IPE, isProcessed):
+		bucket_path = self._create_path_to_bucket(brand, directory)
+		bucket_post_entities_full_path = self._get_bucket_post_entities_file(bucket_path)
+		bucket_images_base_path = self._get_bucket_image_directory(bucket_path)
 		for element in IPE.posts:
 			print(element.keys())
 			if('picture' in element and 'picture_id' in element):
-				path = '{}/{}.png'.format(images_dir_path, element['picture_id'])
-				self._upload_and_compress_image(container_name, path, element['picture'])
+				path = '{}/{}'.format(bucket_images_base_path, element['picture_id'])
+				image_path = self._upload_and_compress_image(container_name, path, element['picture'])
 				element.pop('picture', None)
-				element['image_path'] = path
-				print("uploading image to path", path)
-		print("supplying blob name", blob_name)
-		self._upload_data(container_name, base_path, IPE.serialize(), blob_name=blob_name)
-		self.log(blob_name, isProcessed)
-		return  blob_name
+				element['image_path'] = image_path
+		self._upload_text(container_name, bucket_post_entities_full_path, IPE.serialize())
+		self.log(bucket_path, isProcessed)
+		return  bucket_path
 
-	def upload_brand_operational_output_data(self, brand, data):
-		container = self._output_container()
-		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		return self._upload_data(container, path, data)
+	# def upload_brand_operational_output_data(self, brand, data):
+	# 	container = self._output_container()
+	# 	path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
+	# 	return self._upload_data(container, path, data)
 
 	""" Download """
 	def download_brand_training_input_data(self, brand, processing_status_filter = None):
@@ -126,6 +123,15 @@ class LogoStorageConnector:
 
 	""" Private """
 
+	def _create_path_to_bucket(self, brand_name, level):
+		return '{}/{}/{}=={}'.format(brand_name, level, str(uuid.uuid4())[:8], datetime.datetime.now().strftime("%m-%d-%Y %I:%M%p"))
+
+	def _get_bucket_image_directory(self, prefix):
+		return '{}/[IMAGES]'.format(prefix)
+
+	def _get_bucket_post_entities_file(self, prefix):
+		return '{}/post_entities.txt'.format(prefix)
+
 	def _create_input_container(self):
 		self.service.create_container(self.constants.INPUT_CONTAINER_NAME)
 
@@ -141,28 +147,20 @@ class LogoStorageConnector:
 	def _output_container(self):
 		return self.constants.OUTPUT_CONTAINER_NAME
 
-	def _get_resource_reference(self, prefix):
-		return '{}/{}=={}.txt'.format(prefix, str(uuid.uuid4())[:8], datetime.datetime.now().strftime("%m-%d-%Y %I:%M%p"))
-
-	def _get_blob_reference(self, prefix='blob'):
-		return self._get_resource_reference(prefix)
-
-	def _upload_data(self, container_name, path, data, blob_name = None):
+	def _upload_text(self, container_name, full_blob_name, data):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-		if not (blob_name == None):
-			blob_name = self._get_blob_reference(path);
-			print("Getting new blob name", blob_name)
-		self.service.create_blob_from_text(container_name, blob_name, data)
-		return blob_name
+		self.service.create_blob_from_text(container_name, full_blob_name, data)
+		return full_blob_name
 
-	def _upload_and_compress_image(self, container_name, full_blob_name, data):
+	def _upload_and_compress_image(self, container_name, path, data):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-
+		full_blob_name = '{}{}'.format(path, '.png')
 		with BytesIO() as output:
 			data.save(output, 'PNG')
 			bytes = output.getvalue()
+		print("uploading image to path", path)
 		self.service.create_blob_from_bytes(container_name, full_blob_name, bytes)
 		return full_blob_name
 
@@ -184,16 +182,16 @@ class LogoStorageConnector:
 			log_entries = log_entries.GetLogs(processing_status_filter=processing_status_filter)
 		return log_entries
 
-	def log(self, full_blob_name, isProcessed):
+	def log(self, prefix, isProcessed):
 		container_name = self._input_container()
-		path = self.get_blobs_parent_directory(full_blob_name)
+		path = self.get_parent_directory(prefix)
 		log_path = path + '/log.txt'
 		log_entries = LogEntries()
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)	
-		log_entries.update(full_blob_name, isProcessed=isProcessed)
+		log_entries.update(prefix, isProcessed=isProcessed)
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
@@ -219,8 +217,8 @@ class LogoStorageConnector:
 			raw = log_entries.serialize()
 			self.service.create_blob_from_text(container_name, log_path, raw)
 		
-	def get_blobs_parent_directory(self, full_blob_name):
-		return full_blob_name.rsplit('/', 1)[0]
+	def get_parent_directory(self, entity):
+		return entity.rsplit('/', 1)[0]
 			
 	def exists(self, container, full_blob_name = None):
 		return self.service.exists(container, full_blob_name)

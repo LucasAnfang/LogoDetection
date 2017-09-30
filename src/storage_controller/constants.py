@@ -6,4 +6,5 @@ OUTPUT_CONTAINER_NAME = 'output'
 TRAINING_DIRECTORY_NAME = 'training'
 OPERATIONAL_DIRECTORY_NAME = 'operational'
 
-""" Log Tokens """
+""" NFS Paths """
+
