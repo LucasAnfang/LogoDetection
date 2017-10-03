@@ -101,24 +101,27 @@ class LogoStorageConnector:
 			data.append(self._download_data(container_name, blob.name))
 		return data
 
+	def parallel_input_image_download(self, full_blob_names):
+		return self.parallel_image_download(self.constants.INPUT_CONTAINER_NAME, full_blob_names)
+
 	def parallel_image_download(self, container_name, full_blob_names):
 		if(full_blob_names == None):
 			return None
 		threads = []
 		results = []
 		for full_blob_name in full_blob_names:
-			result
+			result = {'blob': None}
 			t = threading.Thread(target=self.download_image_blob, args=(container_name,full_blob_name, result))
 			results.append(result)
 			threads.append(t)
 			t.start()
 		[t.join() for t in threads]
-		blobs = [blob for blob in results if blob != None]
+		blobs = [result['blob'] for result in results if result['blob'] != None]
 		return blobs
 
 	def download_image_blob(self, container_name, full_blob_name, result):
 		if(self.exists(container_name, full_blob_name)):
-			result = self._download_data(container_name, full_blob_name)
+			result['blob'] = self._download_data(container_name, full_blob_name)
 		else:
 			return None
 
@@ -242,6 +245,9 @@ class LogoStorageConnector:
 	def generate_uid(self):
 		r_uuid = base64.urlsafe_b64encode(uuid.uuid4().bytes)
 		return r_uuid.replace('=', '')
+
+	def download_input_data(self, full_blob_name):
+		return self._download_data(self.constants.INPUT_CONTAINER_NAME, full_blob_name)
 
 	def _download_data(self, container_name, full_blob_name):
 		if not(self.exists(container_name)):
