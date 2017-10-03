@@ -10,7 +10,7 @@ from instagram_scraper import InstagramScraper
 
 """
 TRAIN: python IGScraperTool.py -t patagonia -m 10
-TRAIN UPLOAD: python IGScraperTool.py -tu patagonia
+TRAIN UPLOAD: python IGScraperTool.py -tu patagonia -dl ./patagonia -dnl ./notPatagonia
 OPERATE:  python IGScraperTool.py  -o patagonia nature -l patagonia -m 2
 """
 
@@ -50,15 +50,18 @@ def IG_train(logo_brand, maxImages):
 
 
 
-def IG_train_upload(logo_brand, directory):
+def IG_train_upload(logo_brand, directory, noLogoDirectory):
     '''
         ***ASSUMES HUMAN HAS INSURED THAT ALL PICS CONTAIN <logo_brand>***
         takes the directory './<logo_brand>' 
     '''
-
+    return
     lsc = LogoStorageConnector()
     ipe = InstagramPostEntities(isTraining=True)
-    ipe.archiveImageDirectory(directory)
+    '''
+        TODO: Lucas fix this so takes in noLogoDirectory
+    '''
+    ipe.archiveImageDirectory(directory) 
     lsc.upload_brand_training_input_IPE(logo_brand, ipe, isProcessed = False)
 
 def IG_operate(logo_brand, hashtagList, maxImages):
@@ -122,24 +125,29 @@ def main():
     parser.add_argument('--max_images', '-m', type=int, default=500, help='Maximum number of images scraped for')
     #train-upload
     parser.add_argument('--train-upload', '--train_upload', '-tu', default=None, help='logo brand name to upload directory into networked file system')
-    parser.add_argument('--dir', '-d', default=None, help='Directory pictures are already stored in on local machine')
+    parser.add_argument('--dir_logo', '-dl', default=None, help='Directory of pictures WITH LOGO on local machine')
+    #train-upload no logo dir
+    parser.add_argument('--dir_no_logo', '-dnl', default=None, help='Directory of pictures WITHOUT LOGO on local machine')
     #operate
     parser.add_argument('--operate', '-o', nargs='+', default=None, help='Input list of hashtags (in ) to scrape on with -l logo.')
     parser.add_argument('--logo', '-l', default=None, help='Logo name to operate on')
     args= parser.parse_args()
 
+    #train call to function
     if(args.train is not None):
         IG_train(args.train, args.max_images)
         return
+    #train upload
     if(args.train_upload is not None):
-        picDir = './' + args.train_upload
-        if(args.dir is not None):
-            picDir = args.dir
+        if(args.dir_logo is None or args.dir_no_logo is None):
+            print("Please provie both logo pic directory (--dir_logo) and no logo pic directory (--dir_no_logo)")
+            return        
         #check if dir is valid
-        if not os.path.isdir(picDir):
-            print("Error: directory invalid")
+        if not os.path.isdir(args.dir_logo) or not os.path.isdir(args.dir_no_logo):
+            print("Error: invalid directory")
             return
-        IG_train_upload(args.train_upload, picDir)
+        IG_train_upload(args.train_upload, args.dir_logo, args.dir_no_logo)
+    #operate
     if args.operate is not None:
         if args.logo is None:
             print("Please provide a logo name with operate")
