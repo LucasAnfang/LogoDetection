@@ -55,13 +55,13 @@ def IG_train_upload(logo_brand, directory, noLogoDirectory):
         ***ASSUMES HUMAN HAS INSURED THAT ALL PICS CONTAIN <logo_brand>***
         takes the directory './<logo_brand>' 
     '''
-    return
     lsc = LogoStorageConnector()
     ipe = InstagramPostEntities(isTraining=True)
     '''
         TODO: Lucas fix this so takes in noLogoDirectory
     '''
-    ipe.archiveImageDirectory(directory) 
+    ipe.archiveImageDirectory(directory, has_logo = True) 
+    ipe.archiveImageDirectory(noLogoDirectory, has_logo = False) 
     lsc.upload_brand_training_input_IPE(logo_brand, ipe, isProcessed = False)
 
 def IG_operate(logo_brand, hashtagList, maxImages):

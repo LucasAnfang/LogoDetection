@@ -58,6 +58,7 @@ class InstagramPostEntities:
 				raise ValueError('No post supplied')
 			ig_post_entity[PICTURE] = post[PICTURE]
 			ig_post_entity[PICTURE_ID] = post[PICTURE_ID]
+			ig_post_entity[HAS_LOGO] = post[HAS_LOGO]
 		self.posts.append(ig_post_entity)
 
 	def extend(self, post_list):
@@ -76,6 +77,7 @@ class InstagramPostEntities:
 			post[PICTURE] = picture
 			post[PICTURE_ID] = image_name.split('.')[0]
 			post[HAS_LOGO] = has_logo
+			print(post)
 			self.append(post = post)
 
 	def openImage(self, fileName):

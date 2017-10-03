@@ -12,18 +12,18 @@ class IGProccessingDriver:
 			post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
 			if(len(post_entities_blobs) != 0):
 				training_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isTraining = True)
-				self.process_post_entries(training_post_entities_list, isTraining = True)
+				self.process_training_post_entries(training_post_entities_list, isTraining = True)
 			else:
 				print("No training data to be processed")
 
 			post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(post_entities_blobs) != 0):
 				operational_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isOperational = True)
-				self.process_post_entries(operational_post_entities_list, isOperational = True)
+				self.process_operational_post_entries(operational_post_entities_list, isOperational = True)
 			else:
 				print("No operational data to be processed")
 
-	def process_post_entries(self, post_entities_list, isTraining = False, isOperational = False):
+	def process_operational_post_entries(self, post_entities_list, isTraining = False, isOperational = False):
 		for post_entities in post_entities_list:
 			image_paths = [post_entity['image_path'] for post_entity in post_entities.posts]
 			r2d2 = R2D2(self.storage_manager)
@@ -31,21 +31,27 @@ class IGProccessingDriver:
 			for post_entity in post_entities.posts:
 				image_bytes = r2d2.get_image_with_path(post_entity['image_path'])
 
+	def process_training_post_entries(self, post_entities_list, isTraining = False, isOperational = False):
+		for post_entities in post_entities_list:
+
+			no_logo_post_entities = [post_entity for post_entity in post_entities.posts if post_entity['has_logo'] = False]
+			logo_post_entities = [post_entity for post_entity in post_entities.posts if post_entity['has_logo'] = True]
+
+			no_logo_image_paths = [post_entity['image_path'] for post_entity in no_logo_post_entities.posts]
+			logo_image_paths = [post_entity['image_path'] for post_entity in logo_post_entities.posts]
+
+			no_logo_r2d2 = R2D2(self.storage_manager)
+			logo_r2d2 = R2D2(self.storage_manager)
+
+			no_logo_r2d2.set_image_paths(no_logo_image_paths)
+			logo_r2d2.set_image_paths(logo_image_paths)
+
+			for post_entity in post_entities.posts:
+				image_bytes = r2d2.get_image_with_path(post_entity['image_path'])
+
 
 	def retrieve_supported_brands(self):
 		return self.storage_manager.get_container_directories("input")
-
-	def extract_post_entities_data_nonoland(self, post_entities_blobs, isTraining = False, isOperational = False):
-		if(isTraining == isOperational):
-			raise ValueError('IG post entities has to be either training or operational (not both)')
-		self.brand_to_post_entities_list = {}
-		for post_entities in post_entities_blobs:
-			brand_name = post_entities.name.split('/')[0]
-			if brand_name in self.brand_to_post_entities_list:
-				ipe = InstagramPostEntities(isTraining = isTraining, isClassification = isOperational)
-				ipe.deserialize(post_entities.content)
-				print("extracting ipe data for brand", brand_name, "from resource", post_entities.name)
-				self.brand_to_post_entities_list[brand_name].append(ipe)
 
 	def extract_post_entities_data(self, post_entities_blobs, isTraining = False, isOperational = False):
 		if(isTraining == isOperational):
@@ -64,12 +70,6 @@ class IGProccessingDriver:
 
 	def retrieve_unproccessed_operational_post_entities(self, brand_name):
 		return self.storage_manager.download_brand_operational_input_post_entities(brand_name, processing_status_filter="Unprocessed")
-
-	def retrieve_unproccessed_training_data(self, brand_name):
-		return self.storage_manager.download_brand_operational_input_data(brand_name, processing_status_filter="Unprocessed")
-
-	def retrieve_unproccessed_operational_data(self, brand_name):
-		return self.storage_manager.download_brand_operational_input_data(brand_name, processing_status_filter="Unprocessed")
 
 class R2D2:
 	def __init__(self, storage_manager):
