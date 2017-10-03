@@ -59,8 +59,7 @@ def IG_train_upload(logo_brand, directory):
     lsc = LogoStorageConnector()
     ipe = InstagramPostEntities(isTraining=True)
     ipe.archiveImageDirectory(directory)
-    # print(ipe.serialize())
-    lsc.upload_brand_training_input_data(logo_brand, ipe.serialize(), isProcessed = False)
+    lsc.upload_brand_training_input_IPE(logo_brand, ipe, isProcessed = False)
 
 def IG_operate(logo_brand, hashtagList, maxImages):
     '''

@@ -27,7 +27,7 @@ class InstagramPostEntities:
 		if(self.isTraining == self.isClassification):
 			raise ValueError('InstagramPostEntities must be either for classification or training')
 
-	def append(self, post = None, brand_name = None, serialized_image = None):
+	def append(self, post = None, brand_name = None):
 		ig_post_entity = {}
 		if(self.isClassification == True):
 			if(post == None):
@@ -54,9 +54,10 @@ class InstagramPostEntities:
 			ig_post_entity[IMAGE_CONTEXT] = None
 			ig_post_entity[PICTURE] = post['picture']
 		if(self.isTraining == True):
-			if(serialized_image == None):
-				raise ValueError('No serialized image supplied')
-			ig_post_entity[PICTURE] = serialized_image
+			if(post == None):
+				raise ValueError('No post supplied')
+			ig_post_entity[PICTURE] = post[PICTURE]
+			ig_post_entity[PICTURE_ID] = post[PICTURE_ID]
 		self.posts.append(ig_post_entity)
 
 	def extend(self, post_list):
@@ -71,8 +72,10 @@ class InstagramPostEntities:
 			picture = self.openImage('{}/{}'.format(directory,image_name))
 			if picture is None:
 				continue
-			serialized_image = self.serializeImage(picture)
-			self.append(serialized_image = serialized_image)
+			post {}
+			post[PICTURE] = picture
+			post[PICTURE_ID] = image_name..split('.')[0]
+			self.append(post = post)
 
 	def openImage(self, fileName):
 		try:
