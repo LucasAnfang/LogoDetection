@@ -20,14 +20,12 @@ TYPE_TRAINING = "training"
 TYPE_CLASSIFICATION = "classification"
 
 class InstagramPostEntities:
-	def __init__(self, isTraining = False, isClassification = False, serialized_obj = None):
+	def __init__(self, isTraining = False, isClassification = False):
 		self.posts = []
 		self.isTraining = isTraining
 		self.isClassification = isClassification
 		if(self.isTraining == self.isClassification):
 			raise ValueError('InstagramPostEntities must be either for classification or training')
-		if(serialized_obj == None):
-			self.deserialize(serialized_obj)
 
 	def append(self, post = None, brand_name = None):
 		ig_post_entity = {}

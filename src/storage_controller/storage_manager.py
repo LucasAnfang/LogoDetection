@@ -101,6 +101,27 @@ class LogoStorageConnector:
 			data.append(self._download_data(container_name, blob.name))
 		return data
 
+	def parallel_image_download(self, container_name, full_blob_names):
+		if(full_blob_names == None):
+			return None
+		threads = []
+		results = []
+		for full_blob_name in full_blob_names:
+			result
+			t = threading.Thread(target=self.download_image_blob, args=(container_name,full_blob_name, result))
+			results.append(result)
+			threads.append(t)
+			t.start()
+		[t.join() for t in threads]
+		blobs = [blob for blob in results if blob != None]
+		return blobs
+
+	def download_image_blob(self, container_name, full_blob_name, result):
+		if(self.exists(container_name, full_blob_name)):
+			result = self._download_data(container_name, full_blob_name)
+		else:
+			return None
+
 	def download_brand_operational_output_data(self, brand):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
 		blobs = self.service.list_blobs(container_name=self.constants.OUTPUT_CONTAINER_NAME, prefix=path)
@@ -165,10 +186,10 @@ class LogoStorageConnector:
 	def _upload_and_compress_image(self, container_name, path, data):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-		full_blob_name = '{}{}'.format(path, '.png')
+		full_blob_name = '{}{}'.format(path, '.jpeg')
 
 		with BytesIO() as output:
-			data.save(output, 'PNG')
+			data.save(output, 'jpeg')
 			bytes = output.getvalue()
 
 		print("uploading image to path", path)
