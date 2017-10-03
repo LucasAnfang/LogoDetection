@@ -22,7 +22,7 @@ class LogEntries:
 			self.append(prefix, isProcessed)
 		else:
 			entry = [x for x in self.log_entries if x[PREFIX] == prefix]
-			entry[PROCESSING_STATUS] = processing_status
+			entry[0][PROCESSING_STATUS] = processing_status
 
 	def GetLogs(self, processing_status_filter = None):
 		if(processing_status_filter == None):

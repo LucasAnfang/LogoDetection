@@ -9,36 +9,58 @@ class IGProccessingDriver:
 		print("starting driver...")
 		self.brand_names = self.retrieve_supported_brands()
 		for brand in self.brand_names:
-			post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			if(len(post_entities_blobs) != 0):
-				training_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isTraining = True)
-				self.process_training_post_entries(training_post_entities_list, isTraining = True)
+			training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
+			if(len(training_post_entities_blobs) != 0):
+				training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
+				self.process_training_post_entries(brand, training_post_entities_list, isTraining = True)
 			else:
 				print("No training data to be processed")
 
-			post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
-			if(len(post_entities_blobs) != 0):
-				operational_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isOperational = True)
-				self.process_operational_post_entries(operational_post_entities_list, isOperational = True)
+			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
+			if(len(operational_post_entities_blobs) != 0):
+				operational_post_entities_list = self.extract_post_entities_data(operational_post_entities_blobs, isOperational = True)
+				self.process_operational_post_entries(brand, operational_post_entities_list, isOperational = True)
 			else:
 				print("No operational data to be processed")
+			self.update_log_files(training_post_entities_blobs, operational_post_entities_blobs)
 
-	def process_operational_post_entries(self, post_entities_list, isTraining = False, isOperational = False):
+
+	def update_log_files(self, training_post_entities_blobs, operational_post_entities_blobs):
+		training_bucket_names = [blob.name.rsplit('/', 1)[0] for blob in training_post_entities_blobs]
+		operational_bucket_names = [blob.name.rsplit('/', 1)[0] for blob in operational_post_entities_blobs]
+		bucket_logs_to_update = []
+		if(len(training_bucket_names) != 0):
+			print ("training_bucket_names: ", training_bucket_names)
+			bucket_logs_to_update.extend(training_bucket_names)
+		if(len(operational_bucket_names) != 0):
+			print ("training_bucket_names: ", operational_bucket_names)
+			bucket_logs_to_update.extend(operational_bucket_names)
+		self.storage_manager.update_log_entries(bucket_logs_to_update, True)
+
+	def process_operational_post_entries(self, brand, post_entities_list, isTraining = False, isOperational = False):
 		for post_entities in post_entities_list:
 			image_paths = [post_entity['image_path'] for post_entity in post_entities.posts]
 			r2d2 = R2D2(self.storage_manager)
 			r2d2.set_image_paths(image_paths)
+			index = 0
 			for post_entity in post_entities.posts:
 				image_bytes = r2d2.get_image_with_path(post_entity['image_path'])
+				print ("classifying image from ", post_entity['image_path'])
+				#call bryces interfaces here
 
-	def process_training_post_entries(self, post_entities_list, isTraining = False, isOperational = False):
+				post_entities.setImageContextAtIndex(index, "fun")
+				post_entities.setHasLogoAtIndex(index, True)
+				index = index + 1
+		print("Classification completed for brand: {brand}")
+
+	def process_training_post_entries(self, brand, post_entities_list, isTraining = False, isOperational = False):
 		for post_entities in post_entities_list:
 
-			no_logo_post_entities = [post_entity for post_entity in post_entities.posts if post_entity['has_logo'] = False]
-			logo_post_entities = [post_entity for post_entity in post_entities.posts if post_entity['has_logo'] = True]
+			no_logo_post_entities = [post_entity for post_entity in post_entities.posts if post_entity['has_logo'] == False]
+			logo_post_entities = [post_entity for post_entity in post_entities.posts if post_entity['has_logo'] == True]
 
-			no_logo_image_paths = [post_entity['image_path'] for post_entity in no_logo_post_entities.posts]
-			logo_image_paths = [post_entity['image_path'] for post_entity in logo_post_entities.posts]
+			no_logo_image_paths = [post_entity['image_path'] for post_entity in no_logo_post_entities]
+			logo_image_paths = [post_entity['image_path'] for post_entity in logo_post_entities]
 
 			no_logo_r2d2 = R2D2(self.storage_manager)
 			logo_r2d2 = R2D2(self.storage_manager)
@@ -46,8 +68,19 @@ class IGProccessingDriver:
 			no_logo_r2d2.set_image_paths(no_logo_image_paths)
 			logo_r2d2.set_image_paths(logo_image_paths)
 
-			for post_entity in post_entities.posts:
-				image_bytes = r2d2.get_image_with_path(post_entity['image_path'])
+			for post_entity in no_logo_post_entities:
+				image_bytes = no_logo_r2d2.get_image_with_path(post_entity['image_path'])
+				#call bryces interfaces here
+
+				print ("processing no logo image from ", post_entity['image_path'])
+
+			for post_entity in logo_post_entities:
+				image_bytes = logo_r2d2.get_image_with_path(post_entity['image_path'])
+				#call bryces interfaces here
+
+				print ("processing logo image from ", post_entity['image_path'])
+
+		print("Training completed for brand: {brand}")
 
 
 	def retrieve_supported_brands(self):

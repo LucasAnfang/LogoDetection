@@ -283,11 +283,15 @@ class LogoStorageConnector:
 		directories = {}
 		container_name = self._input_container()
 		for bucket_name in bucket_names:
-			path = self.get_blobs_parent_directory(bucket_name)
+			print(bucket_name)
+			path = self.get_parent_directory(bucket_name)
+			print(path)
 			log_path = path + '/log.txt'
+			print(directories.keys())
 			if log_path in directories:
 				directories[log_path].append(bucket_name)
 			else:
+				print("adding new log path: ", log_path)
 				directories[log_path] = []
 				directories[log_path].append(bucket_name)
 		for key, value in directories.iteritems():
@@ -295,8 +299,12 @@ class LogoStorageConnector:
 			if self.exists(container_name, key):
 				log_file = self.service.get_blob_to_text(container_name, key)
 				raw_logs = log_file.content
+				print(key)
+				print(raw_logs)
 				log_entries.deserialize(raw_logs)
 			for bucket_name in value:
+				print("updating for bucket_name:", bucket_name, "for file: ", key)
 				log_entries.update(bucket_name, isProcessed=isProcessed)
+				print (log_entries.serialize())
 			raw = log_entries.serialize()
-			self.service.create_blob_from_text(container_name, log_path, raw)
+			self.service.create_blob_from_text(container_name, key, raw)

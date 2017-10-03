@@ -77,7 +77,6 @@ class InstagramPostEntities:
 			post[PICTURE] = picture
 			post[PICTURE_ID] = image_name.split('.')[0]
 			post[HAS_LOGO] = has_logo
-			print(post)
 			self.append(post = post)
 
 	def openImage(self, fileName):
