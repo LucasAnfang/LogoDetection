@@ -20,12 +20,14 @@ TYPE_TRAINING = "training"
 TYPE_CLASSIFICATION = "classification"
 
 class InstagramPostEntities:
-	def __init__(self, isTraining = False, isClassification = False):
+	def __init__(self, isTraining = False, isClassification = False, serialized_obj = None):
 		self.posts = []
 		self.isTraining = isTraining
 		self.isClassification = isClassification
 		if(self.isTraining == self.isClassification):
 			raise ValueError('InstagramPostEntities must be either for classification or training')
+		if(serialized_obj == None):
+			self.deserialize(serialized_obj)
 
 	def append(self, post = None, brand_name = None):
 		ig_post_entity = {}
@@ -72,9 +74,9 @@ class InstagramPostEntities:
 			picture = self.openImage('{}/{}'.format(directory,image_name))
 			if picture is None:
 				continue
-			post {}
+			post = {}
 			post[PICTURE] = picture
-			post[PICTURE_ID] = image_name..split('.')[0]
+			post[PICTURE_ID] = image_name.split('.')[0]
 			self.append(post = post)
 
 	def openImage(self, fileName):

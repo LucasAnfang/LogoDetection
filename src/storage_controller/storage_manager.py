@@ -68,6 +68,26 @@ class LogoStorageConnector:
 		prefix = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
 		return self.download_brand_data(self.constants.INPUT_CONTAINER_NAME, brand, prefix, processing_status_filter = processing_status_filter)
 
+	def download_brand_training_input_post_entities(self, brand, processing_status_filter = None):
+		prefix = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
+		return self.download_brand_post_entities(self.constants.INPUT_CONTAINER_NAME, brand, prefix, processing_status_filter = processing_status_filter)
+
+	def download_brand_operational_input_post_entities(self, brand, processing_status_filter = None):
+		prefix = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
+		return self.download_brand_post_entities(self.constants.INPUT_CONTAINER_NAME, brand, prefix, processing_status_filter = processing_status_filter)
+
+	def download_brand_post_entities(self, container_name, brand, prefix, processing_status_filter = None):
+		blobs = []
+		logs = self.retreive_log_entities(container_name, prefix)
+		if(processing_status_filter != None):
+			unproccessed_entries = logs.GetLogs(processing_status_filter = processing_status_filter)
+			for log in unproccessed_entries:
+				blobs.append(self._download_data(container_name, '{}/{}'.format(log[PREFIX], 'post_entities.txt')))
+		else:
+			for log in logs:
+				blobs.append(self._download_data(container_name, '{}/{}'.format(log[PREFIX], 'post_entities.txt')))
+		return blobs	
+
 	def download_brand_data(self, container_name, brand, prefix, processing_status_filter = None):
 		blobs = []
 		if(processing_status_filter != None):
