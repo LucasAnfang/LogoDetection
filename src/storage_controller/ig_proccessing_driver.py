@@ -92,26 +92,31 @@ class R2D2:
 		if(self.is_cache_empty() == True):
 			self.batch_download()
 		return self.get_blob_from_cache(full_blob_name)
+		# print "downloading image from path: " + full_blob_name
+		# return self.download_data(full_blob_name)
 	
 	def get_blob_from_cache(self, full_blob_name):
 		blob = None
 		for index in range(len(self.cache)):
 			if(self.cache[index].name == full_blob_name):
-				print("blob with path: ", full_blob_name, " found in cache")
+				print "blob with path: " + full_blob_name + " found in cache"
 				blob = self.cache[index].name
 				self.cache.pop(index)
 				break
 		if(blob == None):
-			blob = self.storage_manager.download_input_data(full_blob_name)
-			print("blob with path: ", full_blob_name, " NOT found in cache")
+			blob = self.download_data(full_blob_name)
+			print "blob with path: " + full_blob_name + " NOT found in cache"
 		return blob
+
+	def download_data(self, full_blob_name):
+		return self.storage_manager.download_input_data(full_blob_name)
 
 	def batch_download(self):
 		if(self.is_cache_empty() == False):
 			return
 		indices = [(self.current_index + i) for i in range(self.batch_size)]
 		paths = [self.image_paths[i] for i in indices if (i < len(self.image_paths))]
-		print(paths)
+		print "downloading next batch to cache..."
 		self.current_index += len(paths)
 		if(len(paths) != 0):
 			self.cache.extend(self.storage_manager.parallel_input_image_download(paths))
