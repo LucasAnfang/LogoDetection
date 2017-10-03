@@ -10,15 +10,15 @@ class IGProccessingDriver:
 		self.brand_names = self.retrieve_supported_brands()
 		for brand in self.brand_names:
 			post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			training_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isTraining = True)
-			if(training_post_entities_list != None):
+			if(len(post_entities_blobs) != 0):
+				training_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isTraining = True)
 				self.process_post_entries(training_post_entities_list, isTraining = True)
 			else:
 				print("No training data to be processed")
 
 			post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
-			operational_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isOperational = True)
-			if(operational_post_entities_list != None):
+			if(len(post_entities_blobs) != 0):
+				operational_post_entities_list = self.extract_post_entities_data(post_entities_blobs, isOperational = True)
 				self.process_post_entries(operational_post_entities_list, isOperational = True)
 			else:
 				print("No operational data to be processed")

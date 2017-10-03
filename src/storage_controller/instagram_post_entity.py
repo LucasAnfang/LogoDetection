@@ -65,7 +65,7 @@ class InstagramPostEntities:
 		if post_list is not None:
 			self.posts.extend(post_list)
 
-	def archiveImageDirectory(self, directory):
+	def archiveImageDirectory(self, directory, has_logo = True):
 		if(self.isTraining == False):
 			raise ValueError('You can only archive if this class is said to be for training')
 		for image_name in os.listdir(directory):
@@ -75,6 +75,7 @@ class InstagramPostEntities:
 			post = {}
 			post[PICTURE] = picture
 			post[PICTURE_ID] = image_name.split('.')[0]
+			post[HAS_LOGO] = has_logo
 			self.append(post = post)
 
 	def openImage(self, fileName):
