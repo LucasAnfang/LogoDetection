@@ -61,29 +61,45 @@ class LogoStorageConnector:
 
 	""" Download """
 	def download_brand_training_input_data(self, brand, processing_status_filter = None):
-		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
-		blobs = []
-		container_name = self.constants.INPUT_CONTAINER_NAME
-		if(processing_status_filter != None):
-			print(path)
-			logs = self.retreive_log_entities(container_name, path, processing_status_filter = processing_status_filter)
-			for log in logs:
-				blobs.append(self._download_data(container_name, log[PATH]))
-		else:
-			blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
-		return blobs
+		prefix = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
+		return self.download_brand_data(self.constants.INPUT_CONTAINER_NAME, brand, prefix, processing_status_filter = processing_status_filter)
 
 	def download_brand_operational_input_data(self, brand, processing_status_filter = None):
-		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
+		prefix = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
+		return self.download_brand_data(self.constants.INPUT_CONTAINER_NAME, brand, prefix, processing_status_filter = processing_status_filter)
+
+	def download_brand_training_input_post_entities(self, brand, processing_status_filter = None):
+		prefix = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
+		return self.download_brand_post_entities(self.constants.INPUT_CONTAINER_NAME, brand, prefix, processing_status_filter = processing_status_filter)
+
+	def download_brand_operational_input_post_entities(self, brand, processing_status_filter = None):
+		prefix = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
+		return self.download_brand_post_entities(self.constants.INPUT_CONTAINER_NAME, brand, prefix, processing_status_filter = processing_status_filter)
+
+	def download_brand_post_entities(self, container_name, brand, prefix, processing_status_filter = None):
 		blobs = []
-		container_name = self.constants.INPUT_CONTAINER_NAME
+		logs = self.retreive_log_entities(container_name, prefix)
 		if(processing_status_filter != None):
-			logs = self.retreive_log_entities(container_name, path, processing_status_filter = processing_status_filter)
-			for log in logs:
-				blobs.append(self._download_data(container_name, log[PATH]))
+			unproccessed_entries = logs.GetLogs(processing_status_filter = processing_status_filter)
+			for log in unproccessed_entries:
+				blobs.append(self._download_data(container_name, '{}/{}'.format(log[PREFIX], 'post_entities.txt')))
 		else:
-			blobs = self.service.list_blobs(container_name=self.constants.INPUT_CONTAINER_NAME, prefix=path)
-		return blobs
+			for log in logs:
+				blobs.append(self._download_data(container_name, '{}/{}'.format(log[PREFIX], 'post_entities.txt')))
+		return blobs	
+
+	def download_brand_data(self, container_name, brand, prefix, processing_status_filter = None):
+		blobs = []
+		if(processing_status_filter != None):
+			logs = self.retreive_log_entities(container_name, prefix, processing_status_filter = processing_status_filter)
+			for log in logs:
+				blobs.extend(self.service.list_blobs(container_name=container_name, prefix=log[PREFIX]))
+		else:
+			blobs = self.service.list_blobs(container_name=container_name, prefix=prefix)
+		data = []
+		for blob in blobs:
+			data.append(self._download_data(container_name, blob.name))
+		return data
 
 	def download_brand_operational_output_data(self, brand):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
@@ -162,50 +178,42 @@ class LogoStorageConnector:
 	def _parallel_upload(self, container_name, full_blob_name, data):
 		debug = True
 		threads = []
-		thread_count = 10
 		block_ids = []
 
-		current_index = 0
-		end_index = len(data) - 1
-
-		offset = end_index / thread_count
-
-		n = len(data) / 5
+		chunk_size = len(data) / 5
 		if (debug):
-			print("chunking data into even sections of length: ", n)
-		chunks = [data[i:i + n] for i in xrange(0, len(data), n)]
+			print "chunking data into even sections of length: ", chunk_size
+		chunks = [data[i:i + chunk_size] for i in xrange(0, len(data), chunk_size)]
 
 		for chunk in chunks:
-			uid = self.generate_uid()#[str(uuid.uuid4())[:4]]
+			uid = self.generate_uid()
 			block_ids.append(BlobBlock(id=uid))
 			if (debug):
-				print("spawning thread with uid: ", uid)
+				print "spawning thread with uid: ", uid
 			t = threading.Thread(target=self._upload_block, args=(container_name,full_blob_name,chunk,uid,))
 			threads.append(t)
+			t.start()
 		if (debug):	
-			print("starting all the threads...")
-		[t.start() for t in threads]
-		if (debug):	
-			print("all threads started...")
+			print "all threads started..."
 		[t.join() for t in threads]
 		if (debug):	
-			print("all threads have completed execution")
+			print "all threads have completed execution"
 
-		block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-		uncommitted = len(block_list.uncommitted_blocks)
-		committed = len(block_list.committed_blocks)
-		if (debug):	
-			print("uncommitted: ", uncommitted, " committed: ", committed)
+		# block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
+		# uncommitted = len(block_list.uncommitted_blocks)
+		# committed = len(block_list.committed_blocks)
+		# if (debug):	
+		# 	print "uncommitted: ", uncommitted, " committed: ", committed
 
 		if (debug):	
-			print("committing blocks")
+			print "committing blocks"
 		self.service.put_block_list(container_name, full_blob_name, block_ids)
 
-		block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-		uncommitted = len(block_list.uncommitted_blocks)
-		committed = len(block_list.committed_blocks)
-		if (debug):	
-			print("uncommitted: ", uncommitted, " committed: ", committed)
+		# block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
+		# uncommitted = len(block_list.uncommitted_blocks)
+		# committed = len(block_list.committed_blocks)
+		# if (debug):	
+		# 	print "uncommitted: ", uncommitted, " committed: ", committed
 
 	def _upload_block(self, container_name, full_blob_name, chunk, uid):
 		self.service.put_block(container_name, full_blob_name, chunk, uid)
@@ -217,8 +225,7 @@ class LogoStorageConnector:
 	def _download_data(self, container_name, full_blob_name):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-		blob = self.service.get_blob_to_text(container_name, full_blob_name)
-		content = blob.content
+		blob = self.service.get_blob_to_bytes(container_name, full_blob_name)
 		return blob
 
 	def retreive_log_entities(self, container_name, path, processing_status_filter = None):
@@ -245,24 +252,24 @@ class LogoStorageConnector:
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
-	def update_log_entries(self, bucket_name, isProcessed):
+	def update_log_entries(self, bucket_names, isProcessed):
 		directories = {}
 		container_name = self._input_container()
-		for full_blob_name in full_blob_names:
+		for bucket_name in bucket_names:
 			path = self.get_blobs_parent_directory(bucket_name)
 			log_path = path + '/log.txt'
 			if log_path in directories:
-				directories[log_path].append(full_blob_name)
+				directories[log_path].append(bucket_name)
 			else:
 				directories[log_path] = []
-				directories[log_path].append(full_blob_name)
+				directories[log_path].append(bucket_name)
 		for key, value in directories.iteritems():
 			log_entries = LogEntries()
 			if self.exists(container_name, key):
 				log_file = self.service.get_blob_to_text(container_name, key)
 				raw_logs = log_file.content
 				log_entries.deserialize(raw_logs)
-			for full_blob_name in value:
-				log_entries.update(full_blob_name, isProcessed=isProcessed)
+			for bucket_name in value:
+				log_entries.update(bucket_name, isProcessed=isProcessed)
 			raw = log_entries.serialize()
 			self.service.create_blob_from_text(container_name, log_path, raw)
