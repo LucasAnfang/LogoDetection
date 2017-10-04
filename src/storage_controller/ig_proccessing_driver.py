@@ -1,9 +1,15 @@
+import os
+import io
+from PIL import Image
+from array import array
 from storage_manager import LogoStorageConnector
 from instagram_post_entity import InstagramPostEntities
+from table_manager import TableStorageConnector
 
 class IGProccessingDriver:
 	def __init__(self):
 		self.storage_manager = LogoStorageConnector()
+		self.table_manager = TableStorageConnector()
 
 	def start_processing(self):
 		print("starting driver...")
@@ -12,17 +18,17 @@ class IGProccessingDriver:
 			training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
 			if(len(training_post_entities_blobs) != 0):
 				training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
-				self.process_training_post_entries(brand, training_post_entities_list, isTraining = True)
+				self.process_training_post_entries(brand, training_post_entities_list)
 			else:
 				print("No training data to be processed")
 
 			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(operational_post_entities_blobs) != 0):
 				operational_post_entities_list = self.extract_post_entities_data(operational_post_entities_blobs, isOperational = True)
-				self.process_operational_post_entries(brand, operational_post_entities_list, isOperational = True)
+				self.process_operational_post_entries(brand, operational_post_entities_list)
 			else:
 				print("No operational data to be processed")
-			self.update_log_files(training_post_entities_blobs, operational_post_entities_blobs)
+			# self.update_log_files(training_post_entities_blobs, operational_post_entities_blobs)
 
 
 	def update_log_files(self, training_post_entities_blobs, operational_post_entities_blobs):
@@ -35,9 +41,11 @@ class IGProccessingDriver:
 		if(len(operational_bucket_names) != 0):
 			print ("training_bucket_names: ", operational_bucket_names)
 			bucket_logs_to_update.extend(operational_bucket_names)
-		self.storage_manager.update_log_entries(bucket_logs_to_update, True)
 
-	def process_operational_post_entries(self, brand, post_entities_list, isTraining = False, isOperational = False):
+		# Activate when sure
+		# self.storage_manager.update_log_entries(bucket_logs_to_update, True)
+
+	def process_operational_post_entries(self, brand, post_entities_list):
 		for post_entities in post_entities_list:
 			image_paths = [post_entity['image_path'] for post_entity in post_entities.posts]
 			r2d2 = R2D2(self.storage_manager)
@@ -45,15 +53,18 @@ class IGProccessingDriver:
 			index = 0
 			for post_entity in post_entities.posts:
 				image_bytes = r2d2.get_image_with_path(post_entity['image_path'])
+				image = Image.open(io.BytesIO(image_bytes))
+				# image.show()
 				print ("classifying image from ", post_entity['image_path'])
 				#call bryces interfaces here
 
 				post_entities.setImageContextAtIndex(index, "fun")
 				post_entities.setHasLogoAtIndex(index, True)
 				index = index + 1
-		print("Classification completed for brand: {brand}")
+			self.table_manager.upload_instagram_post_entities(brand, post_entities)
+		print("Classification completed for brand: ", brand)
 
-	def process_training_post_entries(self, brand, post_entities_list, isTraining = False, isOperational = False):
+	def process_training_post_entries(self, brand, post_entities_list):
 		for post_entities in post_entities_list:
 
 			no_logo_post_entities = [post_entity for post_entity in post_entities.posts if post_entity['has_logo'] == False]
@@ -70,17 +81,15 @@ class IGProccessingDriver:
 
 			for post_entity in no_logo_post_entities:
 				image_bytes = no_logo_r2d2.get_image_with_path(post_entity['image_path'])
-				#call bryces interfaces here
-
 				print ("processing no logo image from ", post_entity['image_path'])
 
 			for post_entity in logo_post_entities:
 				image_bytes = logo_r2d2.get_image_with_path(post_entity['image_path'])
-				#call bryces interfaces here
-
 				print ("processing logo image from ", post_entity['image_path'])
 
-		print("Training completed for brand: {brand}")
+			#call bryces interfaces here
+
+		print("Training completed for brand: ", brand)
 
 
 	def retrieve_supported_brands(self):
@@ -133,7 +142,7 @@ class R2D2:
 		for index in range(len(self.cache)):
 			if(self.cache[index].name == full_blob_name):
 				print "blob with path: " + full_blob_name + " found in cache"
-				blob = self.cache[index].name
+				blob = self.cache[index].content
 				self.cache.pop(index)
 				break
 		if(blob == None):
@@ -153,32 +162,3 @@ class R2D2:
 		self.current_index += len(paths)
 		if(len(paths) != 0):
 			self.cache.extend(self.storage_manager.parallel_input_image_download(paths))
-
-
-		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

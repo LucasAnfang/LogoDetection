@@ -200,7 +200,7 @@ class LogoStorageConnector:
 		return full_blob_name
 
 	def _parallel_upload(self, container_name, full_blob_name, data):
-		debug = True
+		debug = False
 		threads = []
 		block_ids = []
 
@@ -223,21 +223,22 @@ class LogoStorageConnector:
 		if (debug):	
 			print "all threads have completed execution"
 
-		# block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-		# uncommitted = len(block_list.uncommitted_blocks)
-		# committed = len(block_list.committed_blocks)
-		# if (debug):	
-		# 	print "uncommitted: ", uncommitted, " committed: ", committed
+		if (debug):
+			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
+			uncommitted = len(block_list.uncommitted_blocks)
+			committed = len(block_list.committed_blocks)
+		 	print "uncommitted: ", uncommitted, " committed: ", committed
 
 		if (debug):	
 			print "committing blocks"
-		self.service.put_block_list(container_name, full_blob_name, block_ids)
 
-		# block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-		# uncommitted = len(block_list.uncommitted_blocks)
-		# committed = len(block_list.committed_blocks)
-		# if (debug):	
-		# 	print "uncommitted: ", uncommitted, " committed: ", committed
+		self.service.put_block_list(container_name, full_blob_name, block_ids)
+		
+		if (debug):	
+			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
+			uncommitted = len(block_list.uncommitted_blocks)
+			committed = len(block_list.committed_blocks)
+			print "uncommitted: ", uncommitted, " committed: ", committed
 
 	def _upload_block(self, container_name, full_blob_name, chunk, uid):
 		self.service.put_block(container_name, full_blob_name, chunk, uid)

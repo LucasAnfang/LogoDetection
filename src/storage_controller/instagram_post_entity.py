@@ -7,17 +7,18 @@ DIMENSIONS = 'dimensions'
 CAPTION = 'caption'
 OWNER_ID = 'owner_id'
 TAGS = 'tags'
-TIME = 'time'
+TIME = 'taken_at_timestamp'
 LOCATION = 'location'
 LOGO_NAME = 'logo_name'
 HAS_LOGO = 'has_logo'
 PICTURE = 'picture'
-PICTURE_ID = "picture_id"
+PICTURE_ID = 'picture_id'
 """ NEW """
-IMAGE_CONTEXT = "image_context"
-TYPE = "processing_type"
-TYPE_TRAINING = "training"
-TYPE_CLASSIFICATION = "classification"
+IMAGE_PATH = 'image_path'
+IMAGE_CONTEXT = 'image_context'
+TYPE = 'processing_type'
+TYPE_TRAINING = 'training'
+TYPE_CLASSIFICATION = 'classification'
 
 class InstagramPostEntities:
 	def __init__(self, isTraining = False, isClassification = False):
