@@ -7,27 +7,26 @@ DIMENSIONS = 'dimensions'
 CAPTION = 'caption'
 OWNER_ID = 'owner_id'
 TAGS = 'tags'
-TIME = 'time'
+TIME = 'taken_at_timestamp'
 LOCATION = 'location'
 LOGO_NAME = 'logo_name'
 HAS_LOGO = 'has_logo'
 PICTURE = 'picture'
-PICTURE_ID = "picture_id"
+PICTURE_ID = 'picture_id'
 """ NEW """
-IMAGE_CONTEXT = "image_context"
-TYPE = "processing_type"
-TYPE_TRAINING = "training"
-TYPE_CLASSIFICATION = "classification"
+IMAGE_PATH = 'image_path'
+IMAGE_CONTEXT = 'image_context'
+TYPE = 'processing_type'
+TYPE_TRAINING = 'training'
+TYPE_CLASSIFICATION = 'classification'
 
 class InstagramPostEntities:
-	def __init__(self, isTraining = False, isClassification = False, serialized_obj = None):
+	def __init__(self, isTraining = False, isClassification = False):
 		self.posts = []
 		self.isTraining = isTraining
 		self.isClassification = isClassification
 		if(self.isTraining == self.isClassification):
 			raise ValueError('InstagramPostEntities must be either for classification or training')
-		if(serialized_obj == None):
-			self.deserialize(serialized_obj)
 
 	def append(self, post = None, brand_name = None):
 		ig_post_entity = {}
@@ -60,6 +59,7 @@ class InstagramPostEntities:
 				raise ValueError('No post supplied')
 			ig_post_entity[PICTURE] = post[PICTURE]
 			ig_post_entity[PICTURE_ID] = post[PICTURE_ID]
+			ig_post_entity[HAS_LOGO] = post[HAS_LOGO]
 		self.posts.append(ig_post_entity)
 
 	def extend(self, post_list):
@@ -67,7 +67,7 @@ class InstagramPostEntities:
 		if post_list is not None:
 			self.posts.extend(post_list)
 
-	def archiveImageDirectory(self, directory):
+	def archiveImageDirectory(self, directory, has_logo = True):
 		if(self.isTraining == False):
 			raise ValueError('You can only archive if this class is said to be for training')
 		for image_name in os.listdir(directory):
@@ -77,6 +77,7 @@ class InstagramPostEntities:
 			post = {}
 			post[PICTURE] = picture
 			post[PICTURE_ID] = image_name.split('.')[0]
+			post[HAS_LOGO] = has_logo
 			self.append(post = post)
 
 	def openImage(self, fileName):

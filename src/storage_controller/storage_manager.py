@@ -101,6 +101,30 @@ class LogoStorageConnector:
 			data.append(self._download_data(container_name, blob.name))
 		return data
 
+	def parallel_input_image_download(self, full_blob_names):
+		return self.parallel_image_download(self.constants.INPUT_CONTAINER_NAME, full_blob_names)
+
+	def parallel_image_download(self, container_name, full_blob_names):
+		if(full_blob_names == None):
+			return None
+		threads = []
+		results = []
+		for full_blob_name in full_blob_names:
+			result = {'blob': None}
+			t = threading.Thread(target=self.download_image_blob, args=(container_name,full_blob_name, result))
+			results.append(result)
+			threads.append(t)
+			t.start()
+		[t.join() for t in threads]
+		blobs = [result['blob'] for result in results if result['blob'] != None]
+		return blobs
+
+	def download_image_blob(self, container_name, full_blob_name, result):
+		if(self.exists(container_name, full_blob_name)):
+			result['blob'] = self._download_data(container_name, full_blob_name)
+		else:
+			return None
+
 	def download_brand_operational_output_data(self, brand):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
 		blobs = self.service.list_blobs(container_name=self.constants.OUTPUT_CONTAINER_NAME, prefix=path)
@@ -165,10 +189,10 @@ class LogoStorageConnector:
 	def _upload_and_compress_image(self, container_name, path, data):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-		full_blob_name = '{}{}'.format(path, '.png')
+		full_blob_name = '{}{}'.format(path, '.jpeg')
 
 		with BytesIO() as output:
-			data.save(output, 'PNG')
+			data.save(output, 'jpeg')
 			bytes = output.getvalue()
 
 		print("uploading image to path", path)
@@ -176,7 +200,7 @@ class LogoStorageConnector:
 		return full_blob_name
 
 	def _parallel_upload(self, container_name, full_blob_name, data):
-		debug = True
+		debug = False
 		threads = []
 		block_ids = []
 
@@ -199,21 +223,22 @@ class LogoStorageConnector:
 		if (debug):	
 			print "all threads have completed execution"
 
-		# block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-		# uncommitted = len(block_list.uncommitted_blocks)
-		# committed = len(block_list.committed_blocks)
-		# if (debug):	
-		# 	print "uncommitted: ", uncommitted, " committed: ", committed
+		if (debug):
+			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
+			uncommitted = len(block_list.uncommitted_blocks)
+			committed = len(block_list.committed_blocks)
+		 	print "uncommitted: ", uncommitted, " committed: ", committed
 
 		if (debug):	
 			print "committing blocks"
-		self.service.put_block_list(container_name, full_blob_name, block_ids)
 
-		# block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-		# uncommitted = len(block_list.uncommitted_blocks)
-		# committed = len(block_list.committed_blocks)
-		# if (debug):	
-		# 	print "uncommitted: ", uncommitted, " committed: ", committed
+		self.service.put_block_list(container_name, full_blob_name, block_ids)
+		
+		if (debug):	
+			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
+			uncommitted = len(block_list.uncommitted_blocks)
+			committed = len(block_list.committed_blocks)
+			print "uncommitted: ", uncommitted, " committed: ", committed
 
 	def _upload_block(self, container_name, full_blob_name, chunk, uid):
 		self.service.put_block(container_name, full_blob_name, chunk, uid)
@@ -221,6 +246,9 @@ class LogoStorageConnector:
 	def generate_uid(self):
 		r_uuid = base64.urlsafe_b64encode(uuid.uuid4().bytes)
 		return r_uuid.replace('=', '')
+
+	def download_input_data(self, full_blob_name):
+		return self._download_data(self.constants.INPUT_CONTAINER_NAME, full_blob_name)
 
 	def _download_data(self, container_name, full_blob_name):
 		if not(self.exists(container_name)):
@@ -256,11 +284,15 @@ class LogoStorageConnector:
 		directories = {}
 		container_name = self._input_container()
 		for bucket_name in bucket_names:
-			path = self.get_blobs_parent_directory(bucket_name)
+			print(bucket_name)
+			path = self.get_parent_directory(bucket_name)
+			print(path)
 			log_path = path + '/log.txt'
+			print(directories.keys())
 			if log_path in directories:
 				directories[log_path].append(bucket_name)
 			else:
+				print("adding new log path: ", log_path)
 				directories[log_path] = []
 				directories[log_path].append(bucket_name)
 		for key, value in directories.iteritems():
@@ -268,8 +300,12 @@ class LogoStorageConnector:
 			if self.exists(container_name, key):
 				log_file = self.service.get_blob_to_text(container_name, key)
 				raw_logs = log_file.content
+				print(key)
+				print(raw_logs)
 				log_entries.deserialize(raw_logs)
 			for bucket_name in value:
+				print("updating for bucket_name:", bucket_name, "for file: ", key)
 				log_entries.update(bucket_name, isProcessed=isProcessed)
+				print (log_entries.serialize())
 			raw = log_entries.serialize()
-			self.service.create_blob_from_text(container_name, log_path, raw)
+			self.service.create_blob_from_text(container_name, key, raw)

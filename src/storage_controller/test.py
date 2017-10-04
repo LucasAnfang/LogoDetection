@@ -2,9 +2,44 @@ from storage_manager import LogoStorageConnector
 
 lsc = LogoStorageConnector()
 
+
+image_paths = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]
+
+current_index = 0
+temp_current_index = current_index
+indices = [(current_index + i) for i in range(5)]
+paths = [image_paths[i] for i in indices]
+print paths
+current_index += 5
+
+for index in range(len(paths)):
+	if(paths[index] == "2"):
+		print("found 2")
+		paths.pop(index)
+		break
+print paths
+
+indices = [(current_index + i) for i in range(5)]
+paths = [image_paths[i] for i in indices]
+print paths
+
+current_index += 5
+
+indices = [(current_index + i) for i in range(5)]
+paths = [image_paths[i] for i in indices]
+print paths
+
+current_index += 5
+
+indices = [(current_index + i) for i in range(5)]
+paths = [image_paths[i] for i in indices if (i < len(image_paths))]
+print paths
+
+
+
 upload_demo = False
-log_demo = True
-download_demo = True
+log_demo = False
+download_demo = False
 #"Puma", "Lego", "Nike", "Adidas", 
 brand_names = ["patagonia"]
 
