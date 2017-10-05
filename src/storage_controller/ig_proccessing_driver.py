@@ -80,13 +80,19 @@ class IGProccessingDriver:
 			no_logo_r2d2.set_image_paths(no_logo_image_paths)
 			logo_r2d2.set_image_paths(logo_image_paths)
 
+			no_logo_images = []
+			logo_images = []
+
 			for post_entity in no_logo_post_entities:
 				image_bytes = no_logo_r2d2.get_image_with_path(post_entity['image_path'])
+				image = Image.open(io.BytesIO(image_bytes))
 				print ("processing no logo image from ", post_entity['image_path'])
-
+				no_logo_images.append(image)
 			for post_entity in logo_post_entities:
 				image_bytes = logo_r2d2.get_image_with_path(post_entity['image_path'])
+				image = Image.open(io.BytesIO(image_bytes))
 				print ("processing logo image from ", post_entity['image_path'])
+				logo_images.append(image)
 
 			#call bryces interfaces here
 
