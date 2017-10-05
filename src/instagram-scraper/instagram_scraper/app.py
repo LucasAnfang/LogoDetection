@@ -455,6 +455,7 @@ class InstagramScraper(object):
             '''
             pictureDict[LOGO_NAME] = self.logo_name
             pictureDict[HAS_LOGO] = None
+            pictureDict['accuracy'] = None
             if 'picture_url' in post:
                 pictureDict[PICTURE] = post['picture']
                 pictureDict['picture_url'] = post['picture_url']

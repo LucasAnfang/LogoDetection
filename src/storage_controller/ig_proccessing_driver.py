@@ -43,7 +43,7 @@ class IGProccessingDriver:
 			bucket_logs_to_update.extend(operational_bucket_names)
 
 		# Activate when sure
-		# self.storage_manager.update_log_entries(bucket_logs_to_update, True)
+		self.storage_manager.update_log_entries(bucket_logs_to_update, True)
 
 	def process_operational_post_entries(self, brand, post_entities_list):
 		for post_entities in post_entities_list:
@@ -58,6 +58,7 @@ class IGProccessingDriver:
 				print ("classifying image from ", post_entity['image_path'])
 				#call bryces interfaces here
 
+				post_entities.setAccuracyAtIndex(index, 1.0)
 				post_entities.setImageContextAtIndex(index, "fun")
 				post_entities.setHasLogoAtIndex(index, True)
 				index = index + 1

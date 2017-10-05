@@ -1,7 +1,7 @@
 from ig_proccessing_driver import IGProccessingDriver
 from table_manager import TableStorageConnector
 
-test_driver = False
+test_driver = True
 test_tables = False
 if(test_driver == True):
 	driver = IGProccessingDriver()

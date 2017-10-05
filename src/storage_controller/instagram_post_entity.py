@@ -11,6 +11,7 @@ TIME = 'taken_at_timestamp'
 LOCATION = 'location'
 LOGO_NAME = 'logo_name'
 HAS_LOGO = 'has_logo'
+ACCURACY = 'accuracy'
 PICTURE = 'picture'
 PICTURE_ID = 'picture_id'
 """ NEW """
@@ -53,6 +54,7 @@ class InstagramPostEntities:
 			ig_post_entity[LOGO_NAME] = brand_name
 			ig_post_entity[HAS_LOGO] = None
 			ig_post_entity[IMAGE_CONTEXT] = None
+			ig_post_entity[ACCURACY] = None
 			ig_post_entity[PICTURE] = post['picture']
 		if(self.isTraining == True):
 			if(post == None):
@@ -105,10 +107,19 @@ class InstagramPostEntities:
 		return self.deserializeImage(self.posts[index][PICTURE])
 
 	def setImageContextAtIndex(self, index, image_context):
+		if(self.isClassification == False):
+			raise ValueError('You can only setImageContextAtIndex if you operational')
 		self.posts[index][IMAGE_CONTEXT] = image_context
 
 	def setHasLogoAtIndex(self, index, has_logo):
+		if(self.isClassification == False):
+			raise ValueError('You can only setHasLogoAtIndex if you operational')
 		self.posts[index][HAS_LOGO] = has_logo
+
+	def setAccuracyAtIndex(self, index, accuracy):
+		if(self.isClassification == False):
+			raise ValueError('You can only setAccuracyAtIndex if you operational')
+		self.posts[index][ACCURACY] = accuracy
 
 	def serialize(self):
 		return json.dumps(self.posts, indent=4, ensure_ascii=False)
