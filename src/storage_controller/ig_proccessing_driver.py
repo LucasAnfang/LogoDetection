@@ -5,9 +5,18 @@ from array import array
 from storage_manager import LogoStorageConnector
 from instagram_post_entity import InstagramPostEntities
 from table_manager import TableStorageConnector
-
+import sys
+import numpy as np
+import math
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
+from models import train_image_classifier as train
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
+from models import test_build as test
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
+from models.datasets import convert_my as convert
 class IGProccessingDriver:
 	def __init__(self):
+		print "wudup"
 		self.storage_manager = LogoStorageConnector()
 		self.table_manager = TableStorageConnector()
 
@@ -15,12 +24,12 @@ class IGProccessingDriver:
 		print("starting driver...")
 		self.brand_names = self.retrieve_supported_brands()
 		for brand in self.brand_names:
-			training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			if(len(training_post_entities_blobs) != 0):
-				training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
-				self.process_training_post_entries(brand, training_post_entities_list)
-			else:
-				print("No training data to be processed")
+			# training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
+			# if(len(training_post_entities_blobs) != 0):
+			# 	training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
+			# 	# self.process_training_post_entries(brand, training_post_entities_list)
+			# else:
+			# 	print("No training data to be processed")
 
 			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(operational_post_entities_blobs) != 0):
@@ -51,16 +60,20 @@ class IGProccessingDriver:
 			r2d2 = R2D2(self.storage_manager)
 			r2d2.set_image_paths(image_paths)
 			index = 0
+
 			for post_entity in post_entities.posts:
 				image_bytes = r2d2.get_image_with_path(post_entity['image_path'])
-				image = Image.open(io.BytesIO(image_bytes))
+				image = image_bytes #image = Image.open(io.BytesIO(image_bytes))
 				# image.show()
 				print ("classifying image from ", post_entity['image_path'])
 				#call bryces interfaces here
+				list_test = test.classify("../../resources/train2",[image],reuse=(index != 0))
+			   	names = ["Not Patagonia","Patagonia"]
+				print('Probability %0.2f => [%s]' % (list_test[0][1], names[1]))
 
-				post_entities.setAccuracyAtIndex(index, 1.0)
+				post_entities.setAccuracyAtIndex(index, list_test[0][1])
 				post_entities.setImageContextAtIndex(index, "fun")
-				post_entities.setHasLogoAtIndex(index, True)
+				post_entities.setHasLogoAtIndex(index, bool(math.ceil(list_test[0][1])))
 				index = index + 1
 			self.table_manager.upload_instagram_post_entities(brand, post_entities)
 		print("Classification completed for brand: ", brand)
@@ -85,17 +98,26 @@ class IGProccessingDriver:
 
 			for post_entity in no_logo_post_entities:
 				image_bytes = no_logo_r2d2.get_image_with_path(post_entity['image_path'])
-				image = Image.open(io.BytesIO(image_bytes))
+				image = image_bytes #image = Image.open(io.BytesIO(image_bytes))
 				print ("processing no logo image from ", post_entity['image_path'])
 				no_logo_images.append(image)
 			for post_entity in logo_post_entities:
 				image_bytes = logo_r2d2.get_image_with_path(post_entity['image_path'])
-				image = Image.open(io.BytesIO(image_bytes))
+				image = image_bytes
 				print ("processing logo image from ", post_entity['image_path'])
 				logo_images.append(image)
 
+			labels = [1 for i in logo_images] + [0 for i in no_logo_images]
+			images = []
+			for image in logo_images:
+				images.append(image)
+			for image in no_logo_images:
+				images.append(image)
 			#call bryces interfaces here
-
+			print("len of image",len(images))
+			print("len of labels",len(labels))
+			convert.convert_to("../../resources/tfrecord",images,labels)
+			train.train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord")
 		print("Training completed for brand: ", brand)
 
 
@@ -143,7 +165,7 @@ class R2D2:
 		return self.get_blob_from_cache(full_blob_name)
 		# print "downloading image from path: " + full_blob_name
 		# return self.download_data(full_blob_name)
-	
+
 	def get_blob_from_cache(self, full_blob_name):
 		blob = None
 		for index in range(len(self.cache)):
