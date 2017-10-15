@@ -16,7 +16,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from models.datasets import convert_my as convert
 class IGProccessingDriver:
 	def __init__(self):
-		print "wudup"
 		self.storage_manager = LogoStorageConnector()
 		self.table_manager = TableStorageConnector()
 
@@ -57,24 +56,31 @@ class IGProccessingDriver:
 	def process_operational_post_entries(self, brand, post_entities_list):
 		for post_entities in post_entities_list:
 			image_paths = [post_entity['image_path'] for post_entity in post_entities.posts]
+			batch_size = 30
 			r2d2 = R2D2(self.storage_manager)
-			r2d2.set_image_paths(image_paths)
-			index = 0
-
-			for post_entity in post_entities.posts:
-				image_bytes = r2d2.get_image_with_path(post_entity['image_path'])
-				image = image_bytes #image = Image.open(io.BytesIO(image_bytes))
-				# image.show()
-				print ("classifying image from ", post_entity['image_path'])
-				#call bryces interfaces here
-				list_test = test.classify("../../resources/train2",[image],reuse=(index != 0))
-			   	names = ["Not Patagonia","Patagonia"]
-				print('Probability %0.2f => [%s]' % (list_test[0][1], names[1]))
-
-				post_entities.setAccuracyAtIndex(index, list_test[0][1])
-				post_entities.setImageContextAtIndex(index, "fun")
-				post_entities.setHasLogoAtIndex(index, bool(math.ceil(list_test[0][1])))
-				index = index + 1
+			r2d2.set_image_paths(image_paths, batch_size = batch_size)
+			current_index = 0
+			testvar = False
+			while(True):
+				indices = [(current_index + i) for i in range(batch_size)]
+				images = [r2d2.get_image_with_path(post_entities.posts[i]['image_path']) for i in indices if (i < len(post_entities.posts))]
+				current_index += len(images)
+				if(len(images) == 0):
+					break
+				print("images type ", type(images))
+				results = test.classify("../../resources/train2",images,reuse=testvar)
+				print("results type ", type(results))
+				testvar = True
+				names = ["Not Patagonia","Patagonia"]
+				patching_index = indices[0]
+				for probabilities in results:
+					print("probabilities type ", type(probabilities))
+					for i in range(len(names)):
+						print('Probability %0.2f => [%s]' % (probabilities[i], names[i]))
+					post_entities.setAccuracyAtIndex(patching_index, float(probabilities[1]))
+				 	#post_entities.setImageContextAtIndex(patching_index, probabilities)
+				 	post_entities.setHasLogoAtIndex(patching_index, bool(round(probabilities[1])))
+					patching_index += 1
 			self.table_manager.upload_instagram_post_entities(brand, post_entities)
 		print("Classification completed for brand: ", brand)
 

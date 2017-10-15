@@ -61,7 +61,7 @@ class TableStorageConnector:
 	#only successful table creations (name is unique, not None, and does not contain illegal characters) returns the original table_name
 	def create_table(self, table_name):
 		if(table_name == None):
-			return None;        
+			return None;
 		success = self.service.create_table(table_name)
 		if(success == False):
 			return None
@@ -70,16 +70,16 @@ class TableStorageConnector:
 	#only successful table deletions (table exists) returns the original table_name
 	def delete_table(self, table_name):
 		if(table_name == None):
-			return None;        
+			return None;
 		success = self.service.delete_table(table_name)
 		if(success == False):
 			return None
-		return table_name	
+		return table_name
 
 	#only returns true if name is not None and the table exists
 	def exists(self, table_name):
 		if(table_name == None):
-			return False;        
+			return False;
 		return self.service.exists(table_name)
 
 	# All operations in the same batch must have the same partition key but different row keys
@@ -93,7 +93,7 @@ class TableStorageConnector:
 		if(len(post_entities) > 100):
 			raise ValueError("batch cannot be over 100 entries")
 
-		# Context manager style	
+		# Context manager style
 		# with self.service.batch(table_name) as batch:
 		# 	for entity in post_entities:
 		# 		batch.insert_entity(entity)
@@ -114,7 +114,7 @@ class TableStorageConnector:
 			table_name = self.create_table(table_name)
 			print (table_name ," table created...")
 		current_index = 0
-		while(True):	
+		while(True):
 			pk = self.get_pk()
 			indices = [(current_index + i) for i in range(100)]
 			instagram_post_entities = [IPE.posts[i] for i in indices if (i < len(IPE.posts))]
@@ -162,7 +162,7 @@ class TableStorageConnector:
 
 		entity[ACCURACY] = EntityProperty(EdmType.DOUBLE, instagram_post_entity[ACCURACY])
 
-		entity[IMAGE_CONTEXT] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[IMAGE_CONTEXT]))
+		# entity[IMAGE_CONTEXT] = EntityProperty(EdmType.STRING, "None available atm") #self.serialize_entity_attribute_value(instagram_post_entity[IMAGE_CONTEXT])
 
 		entity[IMAGE_PATH] = EntityProperty(EdmType.STRING, instagram_post_entity[IMAGE_PATH])
 
@@ -170,10 +170,9 @@ class TableStorageConnector:
 
 		return entity
 
-		
+
 	def serialize_entity_attribute_value(self, attribute_value):
 		return json.dumps(attribute_value, indent=4, ensure_ascii=False)
 
 	def get_all_entries(self, table_name):
 		 return list(self.service.query_entities(table_name))
-		

@@ -13,6 +13,8 @@ slim = tf.contrib.slim
 def classify(checkpoints_dir, images, reuse=False):
     image_size = inception.inception_v4.default_image_size
     probabilities_list = []
+    processed_image_list = []
+    images_list = []
     for image in images:
         image = tf.image.decode_jpeg(image, channels=3)
         #image = tf.image.resize_image_with_crop_or_pad(image, 299, 299)
@@ -20,33 +22,32 @@ def classify(checkpoints_dir, images, reuse=False):
                                                              image_size,
                                                              image_size,
                                                              is_training=False)
+        #processed_images  = tf.expand_dims(processed_image, 0)
+        images_list.append(image)
+        processed_image_list.append(processed_image)
+    print("input shape: ", np.shape(processed_image_list))
+    with slim.arg_scope(inception_utils.inception_arg_scope()):
+        logits, _ = inception.inception_v4(processed_image_list,
+                               #num_classes=2,
+                               reuse=reuse,
+                               is_training=False,
+                               logo_names= ['Patagonia'])
+        probabilities = tf.nn.softmax(logits[-1])
 
+        if tf.gfile.IsDirectory(checkpoints_dir):
+          checkpoints_dir = tf.train.latest_checkpoint(checkpoints_dir)
 
-        processed_images  = tf.expand_dims(processed_image, 0)
+        init_fn = slim.assign_from_checkpoint_fn(
+        checkpoints_dir,
+        slim.get_model_variables('InceptionV4'))
 
-        with slim.arg_scope(inception_utils.inception_arg_scope()):
-            logits, _ = inception.inception_v4(processed_images,
-                                   #num_classes=2,
-                                   reuse=reuse,
-                                   is_training=False,
-                                   logo_names= ['Patagonia'])
-            print(logits[-1])
-            probabilities = tf.nn.softmax(logits[-1])
-
-            if tf.gfile.IsDirectory(checkpoints_dir):
-              checkpoints_dir = tf.train.latest_checkpoint(checkpoints_dir)
-
-            init_fn = slim.assign_from_checkpoint_fn(
-            checkpoints_dir,
-            slim.get_model_variables('InceptionV4'))
-
-            with tf.Session() as sess:
-                init_fn(sess)
-                np_image, network_input, probabilities = sess.run([image,
-                                                                   processed_image,
-                                                                   probabilities])
-                probabilities = probabilities[0, 0:]
-                probabilities_list.append(probabilities)
+        with tf.Session() as sess:
+            init_fn(sess)
+            np_image, network_input, probabilities = sess.run([images_list,
+                                                               processed_image_list,
+                                                               probabilities])
+            print("probabilities shape: ", np.shape(probabilities))
+            probabilities_list = probabilities
     return probabilities_list
 '''def main(_):
     images = []
