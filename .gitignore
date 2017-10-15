@@ -1,3 +1,4 @@
 *.DS_Store
 instagram-scraper/.DS_Store
 storage_controller/.DS_Store
+*.pyc
