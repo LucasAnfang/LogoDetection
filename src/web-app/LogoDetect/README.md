@@ -9,3 +9,8 @@ In browser:
 
 DB setup:
 > https://docs.djangoproject.com/en/1.11/intro/tutorial02/
+
+For azure table connection:
+> pip install azure
+> pip install azure-storage-table
+If that doesn't work, see https://github.com/Azure/azure-cosmosdb-python/tree/master/azure-cosmosdb-table for other options

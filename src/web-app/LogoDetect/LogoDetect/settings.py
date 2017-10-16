@@ -16,6 +16,23 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+#azure storage
+# AzureStorage Settings
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+AZURE_STORAGE_ACCOUNT = "logodetectiontesting"
+AZURE_STORAGE_KEY = "HF0EwhCG2R8BBeKGV5qrloyz5Ua0kYQlSQI/vDWsTv3AjjK2nDJOD6Y8iLPjtF6nMnJr2zQZ0xhxkDF0biCArg=="
+AZURE_STORAGE_CONTAINER = "<default_storage_container>" # statics will use this container
+
+'''
+# Static Settings
+STATICFILES_STORAGE = "<my_project>.storage.AzureStorage"
+STATIC_URL = "http://<storage account>.blob.core.windows.net/<default_storage_container>/"
+
+# Media Settings
+MEDIA_URL = 'http://storage.pepperdeck.com/<media_container>/'
+'''
+#done with storage
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -80,6 +97,23 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'sql_server.pyodbc',
+        'NAME': 'mydb',
+        'USER': 'user@myserver',
+        'PASSWORD': 'password',
+        'HOST': 'myserver.database.windows.net',
+        'PORT': '',
+
+        'OPTIONS': {
+            'driver': 'ODBC Driver 13 for SQL Server',
+        },
+    },
+}
+'''
 
 
 # Password validation
