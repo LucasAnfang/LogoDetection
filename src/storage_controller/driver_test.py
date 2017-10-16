@@ -10,4 +10,3 @@ if(test_driver == True):
 if(test_tables == True):
 	table_manager = TableStorageConnector()
 	table_manager.get_all_entries('patagonia')
-
