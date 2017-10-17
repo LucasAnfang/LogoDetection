@@ -1,0 +1,36 @@
+
+{% extends "detector/layout.html" %}
+{% block content %}
+
+
+  <div class="form-group">
+  	
+    <label for="logo"><h3>Brand Logo:</h3></label>
+    <p id="error" style="color: red;"></p>
+    <input type="logo" class="form-control input-lg" id="logo" placeholder="Logo">
+    <p id="emailHelp" class="form-text text-muted">Let's see if this brand is done operating.</p>
+  </div>
+ 
+  <button type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" onclick="redirect()">Submit</button>
+
+
+
+<script type="text/javascript">
+	function redirect() {
+		
+		if(document.getElementById("logo").value.length == 0 || document.getElementById("logo").value == null){
+			document.getElementById("error").innerHTML = "Please input a logo";
+			return;
+		}
+		$('.btn').button('loading');
+		var newURL = "/detector/"+ document.getElementById("logo").value +"/operate";
+		console.log(newURL);
+		window.location.replace(newURL);
+ 		
+	}
+
+
+</script>
+
+
+{% endblock %}
