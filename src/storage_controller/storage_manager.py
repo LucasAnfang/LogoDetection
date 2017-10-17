@@ -32,10 +32,11 @@ class LogoStorageConnector:
 		self.account = CloudStorageAccount(account_name=config.STORAGE_ACCOUNT_NAME, account_key=config.STORAGE_ACCOUNT_KEY)
 		self.service = self.account.create_block_blob_service()
 		self._create_input_container()
-		self._create_output_container()	
+		self._create_output_container()
+        self._create_checkpoints_container()
 
 	""" Public Interfaces """
-	""" Upload """
+	""" Upload: input """
 
 	def upload_brand_training_input_IPE(self, brand, IPE, isProcessed):
 		return self.upload_IPE_to_bucket(self._input_container(), brand, self.constants.TRAINING_DIRECTORY_NAME, IPE, isProcessed, log = True)
@@ -58,6 +59,8 @@ class LogoStorageConnector:
 		if(log == True):
 			self.log(bucket_path, isProcessed)
 		return  bucket_path
+
+    """ Upload: checkpoint """
 
 	""" Download """
 	def download_brand_training_input_data(self, brand, processing_status_filter = None):
@@ -86,7 +89,7 @@ class LogoStorageConnector:
 		else:
 			for log in logs:
 				blobs.append(self._download_data(container_name, '{}/{}'.format(log[PREFIX], 'post_entities.txt')))
-		return blobs	
+		return blobs
 
 	def download_brand_data(self, container_name, brand, prefix, processing_status_filter = None):
 		blobs = []
@@ -131,7 +134,7 @@ class LogoStorageConnector:
 		return blobs
 
 	def get_container_directories(self, container_name):
-		bloblistingresult = self.service.list_blobs(container_name=container_name, delimiter='/') 
+		bloblistingresult = self.service.list_blobs(container_name=container_name, delimiter='/')
 		return [blob.name.rsplit('/', 1)[0] for blob in bloblistingresult]
 
 	""" Pretty Print """
@@ -164,6 +167,9 @@ class LogoStorageConnector:
 	def _create_output_container(self):
 		self.service.create_container(self.constants.OUTPUT_CONTAINER_NAME)
 
+	def _create_checkpoints_container(self):
+		self.service.create_container(self.constants.CHECKPOINTS_CONTAINER_NAME)
+
 	def _create_container(self, container_name):
 		self.service.create_container(container_name)
 
@@ -175,7 +181,7 @@ class LogoStorageConnector:
 
 	def get_parent_directory(self, entity):
 		return entity.rsplit('/', 1)[0]
-			
+
 	def exists(self, container, full_blob_name = None):
 		return self.service.exists(container, full_blob_name)
 
@@ -217,10 +223,10 @@ class LogoStorageConnector:
 			t = threading.Thread(target=self._upload_block, args=(container_name,full_blob_name,chunk,uid,))
 			threads.append(t)
 			t.start()
-		if (debug):	
+		if (debug):
 			print "all threads started..."
 		[t.join() for t in threads]
-		if (debug):	
+		if (debug):
 			print "all threads have completed execution"
 
 		if (debug):
@@ -229,12 +235,12 @@ class LogoStorageConnector:
 			committed = len(block_list.committed_blocks)
 		 	print "uncommitted: ", uncommitted, " committed: ", committed
 
-		if (debug):	
+		if (debug):
 			print "committing blocks"
 
 		self.service.put_block_list(container_name, full_blob_name, block_ids)
-		
-		if (debug):	
+
+		if (debug):
 			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
 			uncommitted = len(block_list.uncommitted_blocks)
 			committed = len(block_list.committed_blocks)
@@ -275,7 +281,7 @@ class LogoStorageConnector:
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
-			log_entries.deserialize(raw_logs)	
+			log_entries.deserialize(raw_logs)
 		log_entries.update(prefix, isProcessed=isProcessed)
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
