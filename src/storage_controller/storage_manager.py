@@ -8,8 +8,8 @@ from azure.storage.blob import (
 import uuid
 import datetime
 import json
-from log_entries import *
-from instagram_post_entity import InstagramPostEntities
+from . import log_entries
+from .instagram_post_entity import InstagramPostEntities
 from io import BytesIO
 from io import BytesIO
 import zlib
@@ -206,31 +206,31 @@ class LogoStorageConnector:
 
 		chunk_size = len(data) / 5
 		if (debug):
-			print "chunking data into even sections of length: ", chunk_size
+			print("chunking data into even sections of length: ", chunk_size)
 		chunks = [data[i:i + chunk_size] for i in xrange(0, len(data), chunk_size)]
 
 		for chunk in chunks:
 			uid = self.generate_uid()
 			block_ids.append(BlobBlock(id=uid))
 			if (debug):
-				print "spawning thread with uid: ", uid
+				print("spawning thread with uid: ", uid)
 			t = threading.Thread(target=self._upload_block, args=(container_name,full_blob_name,chunk,uid,))
 			threads.append(t)
 			t.start()
 		if (debug):	
-			print "all threads started..."
+			print("all threads started...")
 		[t.join() for t in threads]
 		if (debug):	
-			print "all threads have completed execution"
+			print("all threads have completed execution")
 
 		if (debug):
 			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
 			uncommitted = len(block_list.uncommitted_blocks)
 			committed = len(block_list.committed_blocks)
-		 	print "uncommitted: ", uncommitted, " committed: ", committed
+			print("uncommitted: ", uncommitted, " committed: ", committed)
 
 		if (debug):	
-			print "committing blocks"
+			print ("committing blocks")
 
 		self.service.put_block_list(container_name, full_blob_name, block_ids)
 		
@@ -238,7 +238,7 @@ class LogoStorageConnector:
 			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
 			uncommitted = len(block_list.uncommitted_blocks)
 			committed = len(block_list.committed_blocks)
-			print "uncommitted: ", uncommitted, " committed: ", committed
+			print ("uncommitted: ", uncommitted, " committed: ", committed)
 
 	def _upload_block(self, container_name, full_blob_name, chunk, uid):
 		self.service.put_block(container_name, full_blob_name, chunk, uid)
