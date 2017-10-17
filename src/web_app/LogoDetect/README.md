@@ -12,10 +12,5 @@ DB setup:
 
 For azure table connection:
 > pip install azure
-> pip install azure-storage-blob
 > pip install azure-storage-table
 If that doesn't work, see https://github.com/Azure/azure-cosmosdb-python/tree/master/azure-cosmosdb-table for other options
-
-operate check:
-> http://127.0.0.1:8000/detector/operateForm
-input patagonia and it will show you what's in the table

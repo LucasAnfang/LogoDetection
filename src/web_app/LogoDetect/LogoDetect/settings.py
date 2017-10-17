@@ -19,16 +19,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #azure storage
 # AzureStorage Settings
 DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-#Deployment
-AZURE_STORAGE_ACCOUNT = 'logodetectionstorage'
-AZURE_STORAGE_KEY  = 'jPJyzct+8WD1lKU5M+ZwDflWUGRu+YBpH8n/3Z6qR7WD7uc3HV2U1rtiQKesLRq2tU3jtXIe26RklAYdKzoydA=='
-
-#Testing
-'''
 AZURE_STORAGE_ACCOUNT = "logodetectiontesting"
 AZURE_STORAGE_KEY = "HF0EwhCG2R8BBeKGV5qrloyz5Ua0kYQlSQI/vDWsTv3AjjK2nDJOD6Y8iLPjtF6nMnJr2zQZ0xhxkDF0biCArg=="
 AZURE_STORAGE_CONTAINER = "<default_storage_container>" # statics will use this container
-'''
 
 '''
 # Static Settings
