@@ -10,7 +10,6 @@ import datetime
 import json
 from log_entries import *
 from log_entries_base import *
-from instagram_post_entity import InstagramPostEntities
 from io import BytesIO
 from io import BytesIO
 import zlib
