@@ -6,16 +6,19 @@ logs = InputLogEntries("fu.txt")
 print logs.filename
 path_one = 'path_one'
 path_two = 'path_two'
-print 'adding path one (not processed)'
-logs.update(path_one, False)
-print logs.get_logs()
-print logs.get_logs(isProcessed = True)
-logs.update(path_one, True)
-print logs.get_logs(isProcessed = True)
-print logs.get_logs()
-logs.update(path_two, False)
-print logs.get_logs(isProcessed = False)
-print logs.get_logs()
+print 'adding path one (not processed) : {}'.format(logs.update(path_one, False))
+print 'get logs: {}'.format(logs.get_logs())
+print 'get processed logs: {}'.format(logs.get_logs(isProcessed = True))
+print 'update path one to processed: {}'.format(logs.update(path_one, True))
+print 'get processed logs: {}'.format(logs.get_logs(isProcessed = True))
+print 'get logs: {}'.format(logs.get_logs())
+print 'adding path two (not processed) : {}'.format(logs.update(path_two, False))
+print 'get unprocessed logs: {}'.format(logs.get_logs(isProcessed = False))
+print 'get logs: {}'.format(logs.get_logs())
+print 'get processed paths: {}'.format(logs.get_paths_from_log(isProcessed = True))
+print 'get unprocessed paths: {}'.format(logs.get_paths_from_log(isProcessed = False))
+print 'get paths: {}'.format(logs.get_paths_from_log())
+
 indices_test = False
 upload_demo = False
 log_demo = False
