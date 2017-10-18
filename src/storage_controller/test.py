@@ -9,7 +9,13 @@ path_two = 'path_two'
 print 'adding path one (not processed)'
 logs.update(path_one, False)
 print logs.get_logs()
-
+print logs.get_logs(isProcessed = True)
+logs.update(path_one, True)
+print logs.get_logs(isProcessed = True)
+print logs.get_logs()
+logs.update(path_two, False)
+print logs.get_logs(isProcessed = False)
+print logs.get_logs()
 indices_test = False
 upload_demo = False
 log_demo = False

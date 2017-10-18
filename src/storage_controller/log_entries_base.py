@@ -6,15 +6,15 @@ class LogEntriesBase:
 		self.filename = 'log.txt'
 
 	def append(self, entry):
-		if PATH in entry:
+		if LogEntriesBase.PATH in entry:
 			self.log_entries.append(entry)
 
 	def update(self, entry):
-		if PATH in entry:
-			if(len([log_entry for log_entry in self.log_entries if log_entry[PATH] == entry[PATH]]) == 0):
+		if LogEntriesBase.PATH in entry:
+			if(len([log_entry for log_entry in self.log_entries if log_entry[LogEntriesBase.PATH] == entry[LogEntriesBase.PATH]]) == 0):
 				self.append(entry)
 			else:
-				entries = [log_entry for log_entry in self.log_entries if log_entry[PATH] == entry[PATH]]
+				entries = [log_entry for log_entry in self.log_entries if log_entry[LogEntriesBase.PATH] == entry[LogEntriesBase.PATH]]
 				entries[0].update(entry)
 
 	def get_logs(self, filter = None):
