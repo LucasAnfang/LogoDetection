@@ -8,8 +8,8 @@ from azure.storage.blob import (
 import uuid
 import datetime
 import json
-from . import log_entries
-from .instagram_post_entity import InstagramPostEntities
+from log_entries import LogEntries
+from instagram_post_entity import InstagramPostEntities
 from io import BytesIO
 from io import BytesIO
 import zlib
@@ -25,7 +25,7 @@ class LogoStorageConnector:
 		except:
 			raise ValueError('Please specify configuration settings in config.py.')
 		try:
-			import constants as constants
+			import nfs_constants as constants
 			self.constants = constants
 		except:
 			raise ValueError('Please specify networked file system contants in nfs_constants.py.')
@@ -33,7 +33,7 @@ class LogoStorageConnector:
 		self.service = self.account.create_block_blob_service()
 		self._create_input_container()
 		self._create_output_container()
-        self._create_checkpoints_container()
+        # self._create_checkpoints_container()
 
 	""" Public Interfaces """
 	""" Upload: input """
@@ -59,8 +59,6 @@ class LogoStorageConnector:
 		if(log == True):
 			self.log(bucket_path, isProcessed)
 		return  bucket_path
-
-    """ Upload: checkpoint """
 
 	""" Download """
 	def download_brand_training_input_data(self, brand, processing_status_filter = None):

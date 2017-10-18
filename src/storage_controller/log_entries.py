@@ -1,11 +1,9 @@
 import json
-
-PREFIX = 'Prefix'
-PROCESSING_STATUS = 'Processing_Status'
-PROCESSED = 'Processed'
-UNPROCESSED = 'Unprocessed'
-
 class LogEntries:
+	PREFIX = 'Prefix'
+	PROCESSING_STATUS = 'Processing_Status'
+	PROCESSED = 'Processed'
+	UNPROCESSED = 'Unprocessed'
 	def __init__(self):
 		self.log_entries = []
 

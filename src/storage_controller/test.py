@@ -1,46 +1,53 @@
 from storage_manager import LogoStorageConnector
-
-lsc = LogoStorageConnector()
-
-
-image_paths = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]
-
-current_index = 0
-temp_current_index = current_index
-indices = [(current_index + i) for i in range(5)]
-paths = [image_paths[i] for i in indices]
-print paths
-current_index += 5
-
-for index in range(len(paths)):
-	if(paths[index] == "2"):
-		print("found 2")
-		paths.pop(index)
-		break
-print paths
-
-indices = [(current_index + i) for i in range(5)]
-paths = [image_paths[i] for i in indices]
-print paths
-
-current_index += 5
-
-indices = [(current_index + i) for i in range(5)]
-paths = [image_paths[i] for i in indices]
-print paths
-
-current_index += 5
-
-indices = [(current_index + i) for i in range(5)]
-paths = [image_paths[i] for i in indices if (i < len(image_paths))]
-print paths
+from input_log_entries import InputLogEntries
 
 
+logs = InputLogEntries("fu.txt")
+print logs.filename
+path_one = 'path_one'
+path_two = 'path_two'
+print 'adding path one (not processed)'
+logs.update(path_one, False)
+print logs.get_logs()
 
+indices_test = False
 upload_demo = False
 log_demo = False
 download_demo = False
-#"Puma", "Lego", "Nike", "Adidas", 
+lsc = LogoStorageConnector()
+if(indices_test == True):
+	image_paths = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]
+
+	current_index = 0
+	temp_current_index = current_index
+	indices = [(current_index + i) for i in range(5)]
+	paths = [image_paths[i] for i in indices]
+	print paths
+	current_index += 5
+
+	for index in range(len(paths)):
+		if(paths[index] == "2"):
+			print("found 2")
+			paths.pop(index)
+			break
+	print paths
+
+	indices = [(current_index + i) for i in range(5)]
+	paths = [image_paths[i] for i in indices]
+	print paths
+
+	current_index += 5
+
+	indices = [(current_index + i) for i in range(5)]
+	paths = [image_paths[i] for i in indices]
+	print paths
+
+	current_index += 5
+
+	indices = [(current_index + i) for i in range(5)]
+	paths = [image_paths[i] for i in indices if (i < len(image_paths))]
+	print paths
+#"Puma", "Lego", "Nike", "Adidas",
 brand_names = ["patagonia"]
 
 if(upload_demo == True):
@@ -97,7 +104,7 @@ if(log_demo == True):
 
 if(download_demo == True):
 	print("Demo for downloading data for multiple brands unprocessed input/operational data", brand_names)
-	for brand_name in brand_names:	
+	for brand_name in brand_names:
 		# blobs = lsc.download_brand_training_input_data(brand_name, processing_status_filter="Unprocessed")
 		# for blob in blobs:
 		# 	print("  blob name:",blob.name)

@@ -78,15 +78,15 @@ class InputConnector:
 				blobs.append(self.nfs_controller.download_data(container_name, '{}/{}'.format(log[PREFIX], 'post_entities.txt')))
 		return blobs
 
-	def parallel_image_download(self, full_blob_names):
-		return self.nfs_controller.parallel_image_download(self.constants.INPUT_CONTAINER_NAME, full_blob_names)
+	def parallel_download(self, full_blob_names):
+		return self.nfs_controller.parallel_download(self.constants.INPUT_CONTAINER_NAME, full_blob_names)
 
 	def download_data(self, container_name, full_blob_name):
         container = self.constants.INPUT_CONTAINER_NAME
 		return self.nfs_controller.download_data(container, full_blob_name)
 
 	def retreive_log_entities(self, container_name, path, processing_status_filter = None):
-
+        logs = LogEntriesBase()
 	def log(self, prefix, isProcessed):
 
 	def update_log_entries(self, bucket_names, isProcessed):

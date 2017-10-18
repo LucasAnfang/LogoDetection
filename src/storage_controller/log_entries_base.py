@@ -1,10 +1,9 @@
 import json
-
-PATH = 'path'
-
 class LogEntriesBase:
-	def __init__(self):
-		self.ResetLogs()
+	PATH = 'path'
+	def __init__(self, filename = 'log.txt'):
+		self.reset_logs()
+		self.filename = 'log.txt'
 
 	def append(self, entry):
 		if PATH in entry:
@@ -18,13 +17,13 @@ class LogEntriesBase:
 				entries = [log_entry for log_entry in self.log_entries if log_entry[PATH] == entry[PATH]]
 				entries[0].update(entry)
 
-	def GetLogs(self, filter = None):
+	def get_logs(self, filter = None):
 		if(filter == None):
 			return self.log_entries
 		return [log_entry for log_entry in self.log_entries if filter.viewitems() <= log_entry.viewitems()]
 
-	def ResetLogs(self):
-		self self.log_entries = []
+	def reset_logs(self):
+		self.log_entries = []
 
 	def serialize(self):
 		return json.dumps(self.log_entries, indent=4, sort_keys=True, ensure_ascii=False)

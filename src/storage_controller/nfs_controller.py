@@ -82,7 +82,7 @@ class NFS_Controller:
 		return full_blob_name
 
 	""" Download """
-	def parallel_image_download(self, container_name, full_blob_names):
+	def parallel_download(self, container_name, full_blob_names):
 		if(full_blob_names == None):
 			return None
 		threads = []
