@@ -112,29 +112,28 @@ class NFS_Controller:
         return blob
 
     """ Logging """
-	def retreive_log_entities(self, container_name, path, log_entries, filter_dictionary = None):
+	def retreive_log_entities(self, container_name, path, mlog_entries, filter_dictionary = None):
 		log_path = '{}/log.txt'.format(path)
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
-			log_entries.deserialize(raw_logs)
+			mlog_entries.deserialize(raw_logs)
 		if(filter_dictionary != None):
-			log_entries = log_entries.GetLogs(filter=filter_dictionary)
+			mlog_entries = mlog_entries.GetLogs(filter=filter_dictionary)
 
-	def update_log(self, container_name, log_entries, entry):
-		path = self.get_parent_directory(log_entry['prefix'])
+	def update_log(self, container_name, mlog_entries, entry):
+		path = self.get_parent_directory(entry['path'])
 		log_path = '{}/log.txt'.format(path)
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
-			log_entries.deserialize(raw_logs)
-		log_entries.update(entry)
-		raw = log_entries.serialize()
+			mlog_entries.deserialize(raw_logs)
+		mlog_entries.update(entry)
+		raw = mlog_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
-        return log_entries
 
-	def update_logs(self, container_name, log_entries, entries):
-        log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['prefix'])) for log_entry in entries}
+	def update_logs(self, container_name, mlog_entries, entries):
+        log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) for log_entry in entries}
         if len(log_paths) > 1:
             raise ValueError('Logs being updated must be of the same log file')
         log_path = log_paths[0]
@@ -142,46 +141,16 @@ class NFS_Controller:
             raise ValueError('Log file {} under container {} does not exist'.format(log_path, container_name))
 		log_file = self.service.get_blob_to_text(container_name, log_path)
         raw_logs = log_file.content
-        log_entries.deserialize(raw_logs)
+        mlog_entries.deserialize(raw_logs)
 		for entry in entries:
-			log_entries.update(entry)
-		raw = log_entries.serialize()
+			mlog_entries.update(entry)
+		raw = mlog_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
-        return log_entries
 
-
-	def update_log_entries(self, container_name, mlog_entries, entity_names, patch_dictionary):
-		directories = {}
-		for bucket_name in bucket_names:
-			print(bucket_name)
-			path = self.get_parent_directory(bucket_name)
-			print(path)
-			log_path = path + '/log.txt'
-			print(directories.keys())
-			if log_path in directories:
-				directories[log_path].append(bucket_name)
-			else:
-				print("adding new log path: ", log_path)
-				directories[log_path] = []
-				directories[log_path].append(bucket_name)
-		for key, value in directories.iteritems():
-			log_entries = LogEntriesBase()
-			if self.exists(container_name, key):
-				log_file = self.service.get_blob_to_text(container_name, key)
-				raw_logs = log_file.content
-				print(key)
-				print(raw_logs)
-				log_entries.deserialize(raw_logs)
-			for bucket_name in value:
-				print("updating for bucket_name:", bucket_name, "for file: ", key)
-				log_entries.update(bucket_name, isProcessed=isProcessed)
-				print (log_entries.serialize())
-			raw = log_entries.serialize()
-			self.service.create_blob_from_text(container_name, key, raw)
-
-    def _organize_entities_by(entity_names)
-    """ Pretty Print """
-	def pretty_print_storage_structure(self):
-		containers = self.service.list_containers()
-		for container in containers:
-			self.pretty_print_container_contents(container.name)
+    """ Avoid Using this: It is not efficient and you should always update a log directly after resource use """
+	def update_multiple_log_files(self, container_name, mlog_entries, entries):
+        log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) for log_entry in entries}
+		for log_path in log_paths:
+            entries = [log_entry for log_entry in entries if '{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) == log_path]
+            self.update_log_file(container_name, mlog_entries, entries)
+            mlog_entries.ResetLogs()

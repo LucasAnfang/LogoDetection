@@ -10,7 +10,7 @@ class LogEntries:
 		self.log_entries = []
 
 	def append(self, prefix, isProcessed):
-		processing_status = PROCESSED if isProcessed else UNPROCESSED 
+		processing_status = PROCESSED if isProcessed else UNPROCESSED
 		dictionary = {}
 		dictionary[PREFIX] = prefix
 		dictionary[PROCESSING_STATUS] = processing_status
@@ -30,11 +30,11 @@ class LogEntries:
 		return [x for x in self.log_entries if x[PROCESSING_STATUS] == processing_status_filter]
 
 	def GetUnprocessedBlobNames(self):
-		return [x[UNPROCESSED] for x in self.log_entries if x[PROCESSING_STATUS] == UNPROCESSED]
+		# return [x[UNPROCESSED] for x in self.log_entries if x[PROCESSING_STATUS] == UNPROCESSED]
+		return [x[PREFIX] for x in self.log_entries if x[PROCESSING_STATUS] == UNPROCESSED]
 
 	def serialize(self):
 		return json.dumps(self.log_entries, indent=4, sort_keys=True, ensure_ascii=False)
 
 	def deserialize(self, serialized_entity):
 		self.log_entries = json.loads(serialized_entity)
-
