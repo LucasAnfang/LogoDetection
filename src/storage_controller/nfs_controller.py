@@ -9,6 +9,7 @@ import uuid
 import datetime
 import json
 from log_entries import *
+from log_entries_base import *
 from instagram_post_entity import InstagramPostEntities
 from io import BytesIO
 from io import BytesIO
@@ -120,22 +121,37 @@ class NFS_Controller:
 		if(filter_dictionary != None):
 			log_entries = log_entries.GetLogs(filter=filter_dictionary)
 
-	def log(self, container_name, prefix, entry_contents):
-		container_name = self._input_container()
-		path = self.get_parent_directory(prefix)
-		log_path = path + '/log.txt'
-		log_entries = LogEntries()
+	def update_log(self, container_name, log_entries, entry):
+		path = self.get_parent_directory(log_entry['prefix'])
+		log_path = '{}/log.txt'.format(path)
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)
-		log_entries.update(prefix, isProcessed=isProcessed)
+		log_entries.update(entry)
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
+        return log_entries
 
-	def update_log_entries(self, container_name, entity_names, patch_dictionary):
+	def update_logs(self, container_name, log_entries, entries):
+        log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['prefix'])) for log_entry in entries}
+        if len(log_paths) > 1:
+            raise ValueError('Logs being updated must be of the same log file')
+        log_path = log_paths[0]
+		if not self.exists(container_name,log_path):
+            raise ValueError('Log file {} under container {} does not exist'.format(log_path, container_name))
+		log_file = self.service.get_blob_to_text(container_name, log_path)
+        raw_logs = log_file.content
+        log_entries.deserialize(raw_logs)
+		for entry in entries:
+			log_entries.update(entry)
+		raw = log_entries.serialize()
+		self.service.create_blob_from_text(container_name, log_path, raw)
+        return log_entries
+
+
+	def update_log_entries(self, container_name, mlog_entries, entity_names, patch_dictionary):
 		directories = {}
-		container_name = self._input_container()
 		for bucket_name in bucket_names:
 			print(bucket_name)
 			path = self.get_parent_directory(bucket_name)
@@ -149,7 +165,7 @@ class NFS_Controller:
 				directories[log_path] = []
 				directories[log_path].append(bucket_name)
 		for key, value in directories.iteritems():
-			log_entries = LogEntries()
+			log_entries = LogEntriesBase()
 			if self.exists(container_name, key):
 				log_file = self.service.get_blob_to_text(container_name, key)
 				raw_logs = log_file.content
@@ -163,14 +179,9 @@ class NFS_Controller:
 			raw = log_entries.serialize()
 			self.service.create_blob_from_text(container_name, key, raw)
 
+    def _organize_entities_by(entity_names)
     """ Pretty Print """
 	def pretty_print_storage_structure(self):
 		containers = self.service.list_containers()
 		for container in containers:
 			self.pretty_print_container_contents(container.name)
-
-	def pretty_print_container_contents(self, container_name):
-		print(container_name)
-		blobs = self.service.list_blobs(container_name)
-		for blob in blobs:
-			print ('  {}'.format(blob.name))
