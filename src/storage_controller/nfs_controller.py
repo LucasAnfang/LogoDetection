@@ -24,6 +24,10 @@ class NFS_Controller:
 		self.service = self.account.create_block_blob_service()
 
     """ utility functions """
+    def get_containers(self):
+        containers = self.service.list_containers()
+        return containers
+
 	def get_container_directories(self, container_name):
 		bloblistingresult = self.service.list_blobs(container_name=container_name, delimiter='/')
 		return [blob.name.rsplit('/', 1)[0] for blob in bloblistingresult]
@@ -42,57 +46,32 @@ class NFS_Controller:
 		return r_uuid.replace('=', '')
 
 	""" Upload: """
-	def parallel_chunky_upload(self, container_name, full_blob_name, data):
+	def parallel_chunky_upload(self, container_name, full_blob_name, data, chunks = 5):
 		debug = False
 		threads = []
 		block_ids = []
-
-		chunk_size = len(data) / 5
-		if (debug):
-			print "chunking data into even sections of length: ", chunk_size
+		chunk_size = len(data) / chunks
 		chunks = [data[i:i + chunk_size] for i in xrange(0, len(data), chunk_size)]
-
 		for chunk in chunks:
 			uid = self.generate_uid()
 			block_ids.append(BlobBlock(id=uid))
-			if (debug):
-				print "spawning thread with uid: ", uid
 			t = threading.Thread(target=self._upload_block, args=(container_name,full_blob_name,chunk,uid,))
 			threads.append(t)
 			t.start()
-		if (debug):
-			print "all threads started..."
 		[t.join() for t in threads]
-		if (debug):
-			print "all threads have completed execution"
-
-		if (debug):
-			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-			uncommitted = len(block_list.uncommitted_blocks)
-			committed = len(block_list.committed_blocks)
-		 	print "uncommitted: ", uncommitted, " committed: ", committed
-
-		if (debug):
-			print "committing blocks"
-
 		self.service.put_block_list(container_name, full_blob_name, block_ids)
-
-		if (debug):
-			block_list = self.service.get_block_list(container_name, full_blob_name, block_list_type=BlockListType.All)
-			uncommitted = len(block_list.uncommitted_blocks)
-			committed = len(block_list.committed_blocks)
-			print "uncommitted: ", uncommitted, " committed: ", committed
+        return full_blob_name
 
 	def _upload_block(self, container_name, full_blob_name, chunk, uid):
 		self.service.put_block(container_name, full_blob_name, chunk, uid)
 
-	def _upload_text(self, container_name, full_blob_name, data):
+	def upload_text(self, container_name, full_blob_name, data):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
 		self.service.create_blob_from_text(container_name, full_blob_name, data)
 		return full_blob_name
 
-	def _upload_image(self, container_name, path, data):
+	def upload_image(self, container_name, path, data):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
 		full_blob_name = '{}{}'.format(path, '.jpeg')
@@ -130,20 +109,18 @@ class NFS_Controller:
             return None
         blob = self.service.get_blob_to_bytes(container_name, full_blob_name)
         return blob
-    
+
     """ Logging """
-	def retreive_log_entities(self, container_name, path, processing_status_filter = None):
-		log_entries = LogEntries()
-		log_path = path + "/log.txt"
+	def retreive_log_entities(self, container_name, path, log_entries, filter_dictionary = None):
+		log_path = '{}/log.txt'.format(path)
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)
-		if(processing_status_filter != None):
-			log_entries = log_entries.GetLogs(processing_status_filter=processing_status_filter)
-		return log_entries
+		if(filter_dictionary != None):
+			log_entries = log_entries.GetLogs(filter=filter_dictionary)
 
-	def log(self, prefix, isProcessed):
+	def log(self, container_name, prefix, entry_contents):
 		container_name = self._input_container()
 		path = self.get_parent_directory(prefix)
 		log_path = path + '/log.txt'
@@ -156,7 +133,7 @@ class NFS_Controller:
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
-	def update_log_entries(self, bucket_names, isProcessed):
+	def update_log_entries(self, container_name, entity_names, patch_dictionary):
 		directories = {}
 		container_name = self._input_container()
 		for bucket_name in bucket_names:
