@@ -8,8 +8,8 @@ class InputLogEntries(LogEntriesBase):
     PROCESSED = 'Processed'
     UNPROCESSED = 'Unprocessed'
 
-    def __init__(self, filename = 'log.txt'):
-        LogEntriesBase.__init__(self, filename)
+    def __init__(self, filename = 'log.txt', log_entries = None):
+        LogEntriesBase.__init__(self, filename, log_entries)
 
     def get_logs(self, isProcessed = None):
         if(isProcessed == None):
