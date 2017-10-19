@@ -38,17 +38,34 @@ def callScraper(request):
 	if request.method == 'POST':
 		if len(request.POST["brand"]) is 0 or len(request.POST["maxNum"]) is 0:
 			return render(request, 'detector/scrape.html', {"errorString": "Please fill out both fields"})
-		IGScraperTool.IG_train(request.POST["brand"], int(request.POST["maxNum"])+2)
+		IGScraperTool.IG_train(request.POST["brand"].lower(), int(request.POST["maxNum"])+2)
 	return render(request, 'detector/scrape.html', {"successString": "Pictures Scrapped!"})
 
 def train(request):
 	print "here"
 	return render(request, 'detector/train.html', {})
 
+def select(request):
+	if request.method == 'POST':
+		if len(request.POST["brand"]) is 0:
+			return render(request, 'detector/TrainSelect.html', {"errorString": "Please input a brand"})
+			#make a list of all the files in the dir
+		brand = request.POST["brand"].lower()
+		if not os.path.isdir(brand):
+			errStr = "There are no pictures currently saved for " + brand+". Please scrape some picture from Instagram"
+			return render(request, 'detector/TrainSelect.html', {"errorString": errStr})
+		picList = os.listdir(brand)
+		picPathList = []
+		for pic in picList:
+			picPathList.append('/'+brand+'/'+ pic)
+		resultDict = {
+			"logo" : brand,
+			"picList": picPathList
+		}
+	return render(request, 'detector/trainSelect.html', resultDict)
+
 def upload(request):
 	if request.method == 'POST':
-		print request.POST
-		print request.POST["brand"]
 		if len(request.POST["brand"]) is 0 or len(request.POST["logoNoDir"]) is 0 or len(request.POST["logoDir"]) is 0:
 			return render(request, 'detector/train.html', {"errorString": "Please fill out all fields"})
 	#IGScraperTool.IG_train_upload(request.POST["brand"], request.POST["logoDir"], request.POST["logoNoDir"])
