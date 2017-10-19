@@ -111,15 +111,15 @@ class NFS_Controller:
         return blob
 
     """ Logging """
-	def retreive_log_entities(self, container_name, path, filter_dictionary = None):
+	def retreive_log_entities(self, container_name, path, filter = None):
 		log_path = '{}/log.txt'.format(path)
         log_entries = LogEntriesBase()
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)
-		if(filter_dictionary != None):
-			log_entries = log_entries.GetLogs(filter=filter_dictionary)
+		if(filter != None):
+			log_entries = log_entries.GetLogs(filter=filter)
         return log_entries
 
 	def update_log(self, container_name, entry):
