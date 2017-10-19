@@ -31,3 +31,11 @@ class TrainingUpload(models.Model):
 	def save(self, *args, **kwargs):
 		IGScraperTool.IG_train_upload(brand, logo_directory_name, no_logo_directory_name)
 		super(TrainingUpload, self).save(*args, **kwargs)
+
+@python_2_unicode_compatible  # only if you need to support Python 2
+class OperateForm(models.Model):
+	brand = models.CharField(max_length = 50)
+	
+	def __str__(self):
+		return self.brand
+

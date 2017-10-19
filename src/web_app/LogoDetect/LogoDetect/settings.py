@@ -19,8 +19,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #azure storage
 # AzureStorage Settings
 DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-AZURE_STORAGE_ACCOUNT = "logodetectiontesting"
-AZURE_STORAGE_KEY = "HF0EwhCG2R8BBeKGV5qrloyz5Ua0kYQlSQI/vDWsTv3AjjK2nDJOD6Y8iLPjtF6nMnJr2zQZ0xhxkDF0biCArg=="
+AZURE_STORAGE_ACCOUNT = 'logodetectionstorage'
+AZURE_STORAGE_KEY  = 'jPJyzct+8WD1lKU5M+ZwDflWUGRu+YBpH8n/3Z6qR7WD7uc3HV2U1rtiQKesLRq2tU3jtXIe26RklAYdKzoydA=='
 AZURE_STORAGE_CONTAINER = "<default_storage_container>" # statics will use this container
 
 '''
@@ -72,7 +72,7 @@ ROOT_URLCONF = 'LogoDetect.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
