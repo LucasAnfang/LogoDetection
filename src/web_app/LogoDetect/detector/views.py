@@ -41,6 +41,18 @@ def callScraper(request):
 		IGScraperTool.IG_train(request.POST["brand"], int(request.POST["maxNum"])+2)
 	return render(request, 'detector/scrape.html', {"successString": "Pictures Scrapped!"})
 
+def train(request):
+	print "here"
+	return render(request, 'detector/train.html', {})
+
+def upload(request):
+	if request.method == 'POST':
+		print request.POST
+		print request.POST["brand"]
+		if len(request.POST["brand"]) is 0 or len(request.POST["logoNoDir"]) is 0 or len(request.POST["logoDir"]) is 0:
+			return render(request, 'detector/train.html', {"errorString": "Please fill out all fields"})
+	#IGScraperTool.IG_train_upload(request.POST["brand"], request.POST["logoDir"], request.POST["logoNoDir"])
+	return render(request, 'detector/train.html', {"successString": "Testing mode but worked!"})
 
 
 

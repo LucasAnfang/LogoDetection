@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'operateForm', views.operateForm, name='operateForm'),
     url(r'scrape', views.scrape, name='scrape'),
     url(r'callScraper', views.callScraper, name='callScraper'),
-    #url(r'operateForm', views.operateForm, name='operateForm'),
+    url(r'train', views.train, name='train'),
+    url(r'upload', views.upload, name='upload'),
     url(r'^(?P<logo_id>[^\s]+)/operate/$', views.operate, name='operate'),
 ]
