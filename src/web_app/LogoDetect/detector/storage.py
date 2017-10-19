@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 
 import azure
 from azure.storage import *
-#from azure.storage.blob import BlockBlobService
+from azure.storage.blob import BlockBlobService
 from datetime import datetime
 import os, mimetypes
 from azure.cosmosdb.table import TableService, Entity
@@ -13,31 +13,32 @@ class AzureStorage(Storage):
 
     def __init__(self, container=None):
         self.table_service = TableService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
-        '''
-        self.storage_client = CloudStorageAccount(settings.AZURE_STORAGE_ACCOUNT, settings.AZURE_STORAGE_KEY)
-        self.blob_service = self.storage_client.create_block_blob_service()
-        if not container:
-            self.container = "test container"
-        else:
-            self.container = container
-        self.blob_service.create_container(
-            self.container
-            #public_access=PublicAccess.Blob
-        )
-        '''
-        '''
-        blob_service.create_blob_from_bytes(
-            'mycontainername',
-            'myblobname',
-            b'<center><h1>Hello World!</h1></center>',
-            content_settings=ContentSettings('text/html')
-        )
-        '''
+        self.blob_service = BlockBlobService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
+        self.container = "input"
+        self.table_list = [] #everything in the table for this logo
+        self.logo = ""
 
-        #print(blob_service.make_blob_url('mycontainername', 'myblobname'))
     def query(self, tableName, partitionKey, rowKey):
         task = self.table_service.get_entity(tableName, partitionKey, rowKey)
-        return task.Availability
+        return task
+
+    def retrieve_table(self, tableName):
+        #tasks = table_service.query_entities(tableName, filter="PartitionKey eq 'tasksSeattle'", select='description')
+        try:
+            tasks = self.table_service.query_entities(tableName)
+        except:
+            return None
+        self.logo = tableName
+        for task in tasks:
+            self.table_list.append(task)
+        self.table_list = sorted(self.table_list, key=lambda k: k['has_logo'], reverse=True) 
+        return self.table_list
+    
+    def download_blob(self, path, logoName):
+        #download pic into logoName file
+        path = "images/" + logoName 
+
+        self.blob_service.get_blob_to_path(self.container, path, "test.jpeg")
 
     def exists(self, name):
         try:

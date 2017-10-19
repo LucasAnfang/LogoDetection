@@ -1,0 +1,45 @@
+{% extends "detector/layout.html" %}
+
+{% block content %}
+
+ <div class="jumbotron">
+    <div class="container">
+      <h1>Are you ready to detect some Logos?</h1>
+      <p>We must train the model by scraping some pictures, uploading the filterd pictures to the model, and then operating.</p>
+      <p><a class="btn btn-primary btn-lg" href="#" role="button">Let's get started &raquo;</a></p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Example row of columns -->
+    <div class="row">
+      <div class="col-md-4">
+        <h2>Scrape</h2>
+        <p>Scrape instagram for the pictures neededto train the model on. This will find all public pictures with the hashtag of the logobrand </p>
+        <br/>
+        <br/>
+        <p><a class="btn btn-default" href="{%url 'scrape'%}" role="button">Scrape &raquo;</a></p>
+        
+      </div>
+      <div class="col-md-4">
+        <h2>Train Upload</h2>
+        <p>After the pictures are filtered into to two directories (one with picures containing the brand logo, and one with pictures NOT containin the brand logo, this will upload it and start the training on the mode. </p>
+        <p><a class="btn btn-default" href="{%url 'train'%}" role="button">Train &raquo;</a></p>
+      </div>
+      <div class="col-md-4">
+        <h2>Operate Check</h2>
+        <p>Use this to check what pictures have been identified as containing the logo.</p>
+        <br/>
+        <br/>
+        <br/>
+        <p><a class="btn btn-default" href="{%url 'operateForm'%}" role="button">Check &raquo;</a></p>
+      </div>
+    </div>
+
+
+  </div>
+  <!-- /container -->
+
+
+{% endblock %}
+

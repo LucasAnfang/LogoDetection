@@ -1,0 +1,43 @@
+{% extends "detector/layout.html" %}
+{% block content %}
+
+<div class="container">
+	</br>
+	<h5 style = "color:red">{{errorString}}</h5>
+	<h5 style = "color:green">{{successString}}</h5>
+
+<div>
+	<form action="{% url 'upload' %}" method="POST">
+	{% csrf_token %} 
+		<h3> Upload Logo and No-Logo Picture Directories to Train Model</h3>
+		<div class="form-group">
+		    <label for="brand">Brand</label>
+		    <input type="text" class="form-control" id="brand" name="brand">
+		 </div>
+		 <div class="form-group">
+		    <label for="logoDir">Logo Directory: </label>
+		    <input type="text" class="form-control" id="logoDir" name="logoDir">
+		 </div>
+		 <div class="form-group">
+		    <label for="logoNoDir">No Logo Directory: </label>
+		    <input type="text" class="form-control" id="logoNoDir" name="logoNoDir">
+		 </div>
+
+		 <input type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" value ="Upload">
+	 </form>
+ </div>
+ </div>
+
+
+
+
+ <script type="text/javascript">
+	function scrape() {
+		
+		$('.btn').button('loading');
+ 		
+	}
+
+
+</script>
+{% endblock %}

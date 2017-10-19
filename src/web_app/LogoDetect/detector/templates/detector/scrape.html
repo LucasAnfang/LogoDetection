@@ -1,0 +1,40 @@
+{% extends "detector/layout.html" %}
+
+{% block content %}
+
+<div class="container">
+	</br>
+	<h5 style = "color:red">{{errorString}}</h5>
+	<h5 style = "color:green">{{successString}}</h5>
+
+<div>
+	<form action="{% url 'callScraper' %}" method="POST">
+	{% csrf_token %} 
+		<h3> Scrape Instagram for Training Set</h3>
+		<div class="form-group">
+		    <label for="brand">Brand</label>
+		    <input type="text" class="form-control" id="brand" name="brand">
+		 </div>
+		 <div class="form-group">
+		    <label for="max_num">Max # of images to scrape for: </label>
+		    <input type="text" class="form-control" id="maxNum" name="maxNum">
+		 </div>
+
+		 <input type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" value ="Scrape">
+	 </form>
+ </div>
+ </div>
+
+
+
+
+ <script type="text/javascript">
+	function scrape() {
+		
+		$('.btn').button('loading');
+ 		
+	}
+
+
+</script>
+{% endblock %}
