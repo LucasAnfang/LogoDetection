@@ -36,6 +36,8 @@ MEDIA_URL = 'http://storage.pepperdeck.com/<media_container>/'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
+
+MEDIA_ROOT = os.path.dirname(os.path.dirname(__file__))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '1scw1exf5p=bbrxls(66(8sp2=j)-od)ftq*1u0b6#iu_^x+k8'
 
