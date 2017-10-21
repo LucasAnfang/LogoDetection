@@ -1,8 +1,11 @@
-from input_controller import InputController
-from instagram_post_entity import InstagramPostEntities
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
+from src.storage_controller.NetworkedFileSystem.input_controller import InputController
+from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
 from PIL import Image
 
-config_name = 'nfs_test_config'
+config_name = '../Configs/nfs_test_config'
 
 ic = InputController(config_name)
 test_upload = False
@@ -10,7 +13,7 @@ test_download = False
 
 if test_upload:
     print 'extracting images'
-    image_dir = './test_images'
+    image_dir = '../test_images'
     image_1_path = '{}/{}'.format(image_dir,'Unknown-1.jpeg')
     image_2_path = '{}/{}'.format(image_dir,'Unknown.jpeg')
     image_1 = Image.open(image_1_path)

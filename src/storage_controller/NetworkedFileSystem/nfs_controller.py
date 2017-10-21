@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
 from azure.storage.blob import PublicAccess
 from azure.storage import CloudStorageAccount
 from azure.storage.blob import (
@@ -5,13 +8,10 @@ from azure.storage.blob import (
     BlobBlock,
     BlockListType,
 )
-from log_entries_base import LogEntriesBase
+from src.storage_controller.Entities.log_entries_base import LogEntriesBase
 import uuid
 import datetime
 import json
-from log_entries import *
-from log_entries_base import *
-from io import BytesIO
 from io import BytesIO
 import zlib
 import threading

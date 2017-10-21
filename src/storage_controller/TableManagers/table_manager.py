@@ -1,11 +1,14 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
 import time
 import uuid
 from datetime import datetime
 import uuid
 import datetime
 import json
-from log_entries import *
-from instagram_post_entity import InstagramPostEntities
+from src.storage_controller.Entities.log_entries import *
+from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
 from io import BytesIO
 from io import BytesIO
 import zlib

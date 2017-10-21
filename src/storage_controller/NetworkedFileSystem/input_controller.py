@@ -1,6 +1,9 @@
-from log_entries_base import LogEntriesBase
-from input_log_entries import InputLogEntries
-from instagram_post_entity import InstagramPostEntities
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
+from src.storage_controller.Entities.log_entries_base import LogEntriesBase
+from src.storage_controller.Entities.input_log_entries import InputLogEntries
+from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
 from nfs_controller import NFS_Controller
 import uuid
 import datetime

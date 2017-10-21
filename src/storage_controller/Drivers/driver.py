@@ -1,34 +1,28 @@
-import os
 import io
 from PIL import Image
 from array import array
-from storage_manager import LogoStorageConnector
-from instagram_post_entity import InstagramPostEntities
-from table_manager import TableStorageConnector
+import os
 import sys
-import numpy as np
-import math
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from models import train_image_classifier as train
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from models import test_build as test
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from models.datasets import convert_my as convert
-class IGProccessingDriver:
-	def __init__(self):
-		self.storage_manager = LogoStorageConnector()
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
+from src.storage_controller.NetworkedFileSystem.input_controller import InputController
+from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
+from src.storage_controller.TableManagers.table_manager import TableStorageConnector
+
+class Driver:
+	def __init__(self, input_config):
+		self.input_controller = InputController(input_config)
 		self.table_manager = TableStorageConnector()
 
 	def start_processing(self):
 		print("starting driver...")
 		self.brand_names = self.retrieve_supported_brands()
 		for brand in self.brand_names:
-			# training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			# if(len(training_post_entities_blobs) != 0):
-			# 	training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
-			# 	# self.process_training_post_entries(brand, training_post_entities_list)
-			# else:
-			# 	print("No training data to be processed")
+			training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
+			if(len(training_post_entities_blobs) != 0):
+				training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
+				self.process_training_post_entries(brand, training_post_entities_list)
+			else:
+				print("No training data to be processed")
 
 			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(operational_post_entities_blobs) != 0):
@@ -36,7 +30,7 @@ class IGProccessingDriver:
 				self.process_operational_post_entries(brand, operational_post_entities_list)
 			else:
 				print("No operational data to be processed")
-			# self.update_log_files(training_post_entities_blobs, operational_post_entities_blobs)
+			self.update_log_files(training_post_entities_blobs, operational_post_entities_blobs)
 
 
 	def update_log_files(self, training_post_entities_blobs, operational_post_entities_blobs):
@@ -51,13 +45,13 @@ class IGProccessingDriver:
 			bucket_logs_to_update.extend(operational_bucket_names)
 
 		# Activate when sure
-		self.storage_manager.update_log_entries(bucket_logs_to_update, True)
+		# self.input_controller.update_log_entries(bucket_logs_to_update, True)
 
 	def process_operational_post_entries(self, brand, post_entities_list):
 		for post_entities in post_entities_list:
 			image_paths = [post_entity['image_path'] for post_entity in post_entities.posts]
 			batch_size = 30
-			r2d2 = R2D2(self.storage_manager)
+			r2d2 = R2D2(self.input_controller)
 			r2d2.set_image_paths(image_paths, batch_size = batch_size)
 			current_index = 0
 			testvar = False
@@ -67,21 +61,21 @@ class IGProccessingDriver:
 				current_index += len(images)
 				if(len(images) == 0):
 					break
-				print("images type ", type(images))
-				results = test.classify("../../resources/train2",images,reuse=testvar)
-				print("results type ", type(results))
-				testvar = True
-				names = ["Not Patagonia","Patagonia"]
-				patching_index = indices[0]
-				for probabilities in results:
-					print("probabilities type ", type(probabilities))
-					for i in range(len(names)):
-						print('Probability %0.2f => [%s]' % (probabilities[i], names[i]))
-					post_entities.setAccuracyAtIndex(patching_index, float(probabilities[1]))
-				 	#post_entities.setImageContextAtIndex(patching_index, probabilities)
-				 	post_entities.setHasLogoAtIndex(patching_index, bool(round(probabilities[1])))
-					patching_index += 1
-			self.table_manager.upload_instagram_post_entities(brand, post_entities)
+				# print("images type ", type(images))
+				# results = test.classify("../../resources/train2",images,reuse=testvar)
+				# print("results type ", type(results))
+				# testvar = True
+				# names = ["Not Patagonia","Patagonia"]
+				# patching_index = indices[0]
+				# for probabilities in results:
+				# 	print("probabilities type ", type(probabilities))
+				# 	for i in range(len(names)):
+				# 		print('Probability %0.2f => [%s]' % (probabilities[i], names[i]))
+				# 	post_entities.setAccuracyAtIndex(patching_index, float(probabilities[1]))
+				#  	#post_entities.setImageContextAtIndex(patching_index, probabilities)
+				#  	post_entities.setHasLogoAtIndex(patching_index, bool(round(probabilities[1])))
+				# 	patching_index += 1
+			# self.table_manager.upload_instagram_post_entities(brand, post_entities)
 		print("Classification completed for brand: ", brand)
 
 	def process_training_post_entries(self, brand, post_entities_list):
@@ -93,8 +87,8 @@ class IGProccessingDriver:
 			no_logo_image_paths = [post_entity['image_path'] for post_entity in no_logo_post_entities]
 			logo_image_paths = [post_entity['image_path'] for post_entity in logo_post_entities]
 
-			no_logo_r2d2 = R2D2(self.storage_manager)
-			logo_r2d2 = R2D2(self.storage_manager)
+			no_logo_r2d2 = R2D2(self.input_controller)
+			logo_r2d2 = R2D2(self.input_controller)
 
 			no_logo_r2d2.set_image_paths(no_logo_image_paths)
 			logo_r2d2.set_image_paths(logo_image_paths)
@@ -122,13 +116,13 @@ class IGProccessingDriver:
 			#call bryces interfaces here
 			print("len of image",len(images))
 			print("len of labels",len(labels))
-			convert.convert_to("../../resources/tfrecord",images,labels)
-			train.train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord")
+			# convert.convert_to("../../resources/tfrecord",images,labels)
+			# train.train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord")
 		print("Training completed for brand: ", brand)
 
 
 	def retrieve_supported_brands(self):
-		return self.storage_manager.get_container_directories("input")
+		return self.input_controller.get_container_directories()
 
 	def extract_post_entities_data(self, post_entities_blobs, isTraining = False, isOperational = False):
 		if(isTraining == isOperational):
@@ -143,14 +137,14 @@ class IGProccessingDriver:
 		return post_entities_list
 
 	def retrieve_unproccessed_training_post_entities(self, brand_name):
-		return self.storage_manager.download_brand_training_input_post_entities(brand_name, processing_status_filter="Unprocessed")
+		return self.input_controller.download_brand_training_post_entities(brand_name, isProcessed = False)
 
 	def retrieve_unproccessed_operational_post_entities(self, brand_name):
-		return self.storage_manager.download_brand_operational_input_post_entities(brand_name, processing_status_filter="Unprocessed")
+		return self.input_controller.download_brand_operational_post_entities(brand_name, isProcessed = False)
 
 class R2D2:
-	def __init__(self, storage_manager):
-		self.storage_manager = storage_manager
+	def __init__(self, input_controller):
+		self.input_controller = input_controller
 
 	def reset(self):
 		self.current_index = 0
@@ -186,7 +180,7 @@ class R2D2:
 		return blob
 
 	def download_data(self, full_blob_name):
-		return self.storage_manager.download_input_data(full_blob_name)
+		return self.input_controller.download_data(full_blob_name)
 
 	def batch_download(self):
 		if(self.is_cache_empty() == False):
@@ -196,4 +190,4 @@ class R2D2:
 		print "downloading next batch to cache..."
 		self.current_index += len(paths)
 		if(len(paths) != 0):
-			self.cache.extend(self.storage_manager.parallel_input_image_download(paths))
+			self.cache.extend(self.input_controller.parallel_download(paths))
