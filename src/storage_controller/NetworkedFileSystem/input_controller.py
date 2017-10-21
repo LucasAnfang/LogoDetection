@@ -4,17 +4,19 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
 from src.storage_controller.Entities.log_entries_base import LogEntriesBase
 from src.storage_controller.Entities.input_log_entries import InputLogEntries
 from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
+from nfs_controller_config import NFS_Controller_Config
 from nfs_controller import NFS_Controller
 import uuid
 import datetime
 
 class InputController:
-	def __init__(self, nfs_config):
-		try:
-			config =  __import__(nfs_config)
-			self.config = config
-		except:
-			raise ValueError('Please specify configuration settings in config.py.')
+	def __init__(self, config):
+		# try:
+		# 	print 'trying to extract config data from [{}]'.format(nfs_config)
+		# 	config =  __import__(nfs_config)
+		# 	self.config = config
+		# except:
+		# 	raise ValueError('Please specify configuration settings in config.py.')
 		try:
 			import nfs_constants as constants
 			self.constants = constants

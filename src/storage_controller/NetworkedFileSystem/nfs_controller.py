@@ -9,6 +9,7 @@ from azure.storage.blob import (
     BlockListType,
 )
 from src.storage_controller.Entities.log_entries_base import LogEntriesBase
+from nfs_controller_config import NFS_Controller_Config
 import uuid
 import datetime
 import json
@@ -21,7 +22,7 @@ from PIL import Image
 class NFS_Controller:
 	def __init__(self, config):
 		self.config = config
-		self.account = CloudStorageAccount(account_name=config.STORAGE_ACCOUNT_NAME, account_key=config.STORAGE_ACCOUNT_KEY)
+		self.account = CloudStorageAccount(account_name=config.storage_account_name, account_key=config.storage_account_key)
 		self.service = self.account.create_block_blob_service()
 
 	""" utility functions """

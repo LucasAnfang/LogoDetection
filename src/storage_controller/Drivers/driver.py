@@ -11,7 +11,7 @@ from src.storage_controller.TableManagers.table_manager import TableStorageConne
 class Driver:
 	def __init__(self, input_config):
 		self.input_controller = InputController(input_config)
-		self.table_manager = TableStorageConnector()
+		self.table_manager = TableStorageConnector(input_config)
 
 	def start_processing(self):
 		print("starting driver...")

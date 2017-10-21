@@ -9,6 +9,7 @@ import datetime
 import json
 from src.storage_controller.Entities.log_entries import *
 from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
+from src.storage_controller.NetworkedFileSystem.nfs_controller_config import NFS_Controller_Config
 from io import BytesIO
 from io import BytesIO
 import zlib
@@ -52,13 +53,9 @@ TYPE_CLASSIFICATION = 'classification'
 ACCURACY = 'accuracy'
 
 class TableStorageConnector:
-	def __init__(self):
-		try:
-			import config as config
-			self.config = config
-		except:
-			raise ValueError('Please specify configuration settings in config.py.')
-		self.account = CloudStorageAccount(account_name=config.STORAGE_ACCOUNT_NAME, account_key=config.STORAGE_ACCOUNT_KEY)
+	def __init__(self, config):
+		self.config = config
+		self.account = CloudStorageAccount(account_name=config.storage_account_name, account_key=config.storage_account_key)
 		self.service = self.account.create_table_service()
 
 	#only successful table creations (name is unique, not None, and does not contain illegal characters) returns the original table_name
