@@ -36,8 +36,8 @@ class InputController:
 	def _input_container(self):
 		return self.constants.INPUT_CONTAINER_NAME
 
-	def get_container_directories(self, container_name):
-		return self.nfs_controller.get_container_directories(container_name)
+	def get_container_directories(self):
+		return self.nfs_controller.get_container_directories(self._input_container())
 
 	""" Upload: input """
 	def upload_brand_training_input_IPE(self, brand, IPE, isProcessed):
@@ -62,26 +62,26 @@ class InputController:
 		return  bucket_path
 
 	""" Download """
-	def download_brand_training_input_post_entities(self, brand, isProcessed = None):
+	def download_brand_training_post_entities(self, brand, isProcessed = None):
 		path = '{}/{}'.format(brand, self.constants.TRAINING_DIRECTORY_NAME)
-		return self.download_brand_post_entities(self._input_container(), brand, path, isProcessed = isProcessed)
+		return self.download_brand_post_entities(brand, path, isProcessed = isProcessed)
 
-	def download_brand_operational_input_post_entities(self, brand, isProcessed = None):
+	def download_brand_operational_post_entities(self, brand, isProcessed = None):
 		path = '{}/{}'.format(brand, self.constants.OPERATIONAL_DIRECTORY_NAME)
-		return self.download_brand_post_entities(self._input_container(), brand, path, isProcessed = isProcessed)
+		return self.download_brand_post_entities(brand, path, isProcessed = isProcessed)
 
 	def download_brand_post_entities(self, brand, prefix, isProcessed = None):
 		blobs = []
 		container_name = self._input_container()
-		logs = self.retrieve_log_entities(container_name, prefix, isProcessed = isProcessed)
+		logs = self.retrieve_log_entities(prefix, isProcessed = isProcessed)
 		for log in logs:
-			blobs.append(self.nfs_controller.download_data(container_name, '{}/{}'.format(log[PREFIX], 'post_entities.txt')))
+			blobs.append(self.nfs_controller.download_data(container_name, '{}/{}'.format(log[LogEntriesBase.PATH], 'post_entities.txt')))
 		return blobs
 
 	def parallel_download(self, full_blob_names):
 		return self.nfs_controller.parallel_download(self._input_container(), full_blob_names)
 
-	def download_data(self, container_name, full_blob_name):
+	def download_data(self, full_blob_name):
 		container = self._input_container()
 		return self.nfs_controller.download_data(container, full_blob_name)
 
@@ -91,7 +91,7 @@ class InputController:
 		entry = { LogEntriesBase.PATH : path, InputLogEntries.PROCESSING_STATUS : processing_status }
 		self.nfs_controller.update_log(self._input_container(), entry)
 
-	def retrieve_log_entities(self, container_name, path, isProcessed = None, paths_only = False):
+	def retrieve_log_entities(self, path, isProcessed = None, paths_only = False):
 		container = self._input_container()
 		if(isProcessed == None):
 			filter = None
@@ -99,7 +99,7 @@ class InputController:
 			processing_status = InputLogEntries.PROCESSED if isProcessed else InputLogEntries.UNPROCESSED
 			filter = { InputLogEntries.PROCESSING_STATUS : processing_status }
 		log_blobs = self.nfs_controller.retrieve_log_entities(container, path, filter = filter)
-		if(path_only == True):
+		if(paths_only == True):
 			return [log_entry[LogEntriesBase.PATH] for log_entry in log_blobs]
 		return log_blobs
 

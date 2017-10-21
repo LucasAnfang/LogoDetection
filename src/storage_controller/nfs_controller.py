@@ -5,6 +5,7 @@ from azure.storage.blob import (
     BlobBlock,
     BlockListType,
 )
+from log_entries_base import LogEntriesBase
 import uuid
 import datetime
 import json
@@ -99,7 +100,7 @@ class NFS_Controller:
 
 	def _download_blob_helper(self, container_name, full_blob_name, result):
 		if(self.exists(container_name, full_blob_name)):
-			result['blob'] = self._download_data(container_name, full_blob_name)
+			result['blob'] = self.download_data(container_name, full_blob_name)
 		else:
 			return None
 
@@ -119,11 +120,11 @@ class NFS_Controller:
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)
 		if(filter != None):
-			log_entries = log_entries.GetLogs(filter=filter)
+			log_entries = log_entries.get_logs(filter=filter)
 		return log_entries
 
 	def update_log(self, container_name, entry):
-		path = self.get_parent_directory(entry['path'])
+		path = self.get_parent_directory(entry[LogEntriesBase.PATH])
 		log_path = '{}/log.txt'.format(path)
 		log_entries = LogEntriesBase()
 		if self.exists(container_name,log_path):
@@ -135,7 +136,7 @@ class NFS_Controller:
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
 	def update_logs(self, container_name, entries):
-		log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) for log_entry in entries}
+		log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry[LogEntriesBase.PATH])) for log_entry in entries}
 		if len(log_paths) > 1:
 			raise ValueError('Logs being updated must be of the same log file')
 		log_path = log_paths[0]
@@ -152,7 +153,7 @@ class NFS_Controller:
 
 	""" Avoid Using this: It is not efficient and you should always update a log directly after resource use """
 	def update_multiple_log_files(self, container_name, entries):
-		log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) for log_entry in entries}
+		log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry[LogEntriesBase.PATH])) for log_entry in entries}
 		for log_path in log_paths:
-			entries = [log_entry for log_entry in entries if '{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) == log_path]
+			entries = [log_entry for log_entry in entries if '{}/log.txt'.format(self.get_parent_directory(log_entry[LogEntriesBase.PATH])) == log_path]
 			self.update_logs(container_name, entries)
