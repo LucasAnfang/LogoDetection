@@ -38,9 +38,15 @@
 }
 </style>
 
+{%if output%}
+<h3>{{output}}</h3>
+<img src="https://thumbs.gfycat.com/AshamedWeightyDachshund-max-1mb.gif"/>
+{% else %}
+
 
 <div class="container">
   <h3>Select the images that have the {{logo}} logo</h3>
+
 <div class = "row">
 {%for pic in picList%}
 
@@ -57,11 +63,21 @@
 <br/>
 <div class="row">
 <button type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" onclick="seperate()">Upload</button>
+<h4 style = "color:red" id="errorString">{{errorString}}</h4>
 </div>
 
 
 </div>
 
+
+<form action="{% url 'supload' %}" method="POST" id="hiddenForm">
+	{% csrf_token %}
+  <input type="hidden" name="picList" value="">
+	<input type="hidden" name="nonPicList" value="">
+	<input type="hidden" name="brand" value="{{logo}}">
+  <input type="submit" value="Submit" style="display:none">
+</form>
+{% endif %}
 <script type="text/javascript">
 
 $(".image-checkbox").each(function () {
@@ -84,19 +100,33 @@ $(".image-checkbox").on("click", function (e) {
 
 
 function seperate(){
-	var list = document.getElementsByClassName("image-checkbox-checked");
+	$('.btn').button('loading');
+	var list = document.getElementsByClassName("image-checkbox");
+	console.log(list);
 	var pathList = [];
+	var nonPathList = [];
 	for(var i = 0; i < list.length; i++){
 		var element = list[i];
+		console.log(element);
 		var path = element.firstChild.nextSibling.dataset.path;
-		
-		console.log(path);
-		pathList.push(path);
+		if($(element).hasClass("image-checkbox-checked")){
+			pathList.push(path.substring(1));
+		}else{
+			nonPathList.push(path.substring(1));
+		}
+
 	}
+	if(pathList.length == 0){
+		$('#errorString').html("You haven't selected any pictures");
+		$('.btn').button('reset');
+		return;
+	}
+	$("input[name=picList]").val(pathList);
+	$("input[name=nonPicList]").val(nonPathList);
+	$( "#hiddenForm" ).submit();
+
 }
 </script>
 
 
 {% endblock %}
-
-
