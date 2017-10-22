@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
 from azure.storage.blob import PublicAccess
 from azure.storage import CloudStorageAccount
 from azure.storage.blob import (
@@ -5,12 +8,11 @@ from azure.storage.blob import (
     BlobBlock,
     BlockListType,
 )
+from src.storage_controller.Entities.log_entries_base import LogEntriesBase
+from nfs_controller_config import NFS_Controller_Config
 import uuid
 import datetime
 import json
-from log_entries import *
-from log_entries_base import *
-from io import BytesIO
 from io import BytesIO
 import zlib
 import threading
@@ -20,13 +22,13 @@ from PIL import Image
 class NFS_Controller:
 	def __init__(self, config):
 		self.config = config
-		self.account = CloudStorageAccount(account_name=config.STORAGE_ACCOUNT_NAME, account_key=config.STORAGE_ACCOUNT_KEY)
+		self.account = CloudStorageAccount(account_name=config.storage_account_name, account_key=config.storage_account_key)
 		self.service = self.account.create_block_blob_service()
 
-    """ utility functions """
-    def get_containers(self):
-        containers = self.service.list_containers()
-        return containers
+	""" utility functions """
+	def get_containers(self):
+		containers = self.service.list_containers()
+		return containers
 
 	def get_container_directories(self, container_name):
 		bloblistingresult = self.service.list_blobs(container_name=container_name, delimiter='/')
@@ -35,8 +37,8 @@ class NFS_Controller:
 	def create_container(self, container_name):
 		self.service.create_container(container_name)
 
-    def get_parent_directory(self, path):
-    	return path.rsplit('/', 1)[0]
+	def get_parent_directory(self, path):
+		return path.rsplit('/', 1)[0]
 
 	def exists(self, container, full_blob_name = None):
 		return self.service.exists(container, full_blob_name)
@@ -60,7 +62,7 @@ class NFS_Controller:
 			t.start()
 		[t.join() for t in threads]
 		self.service.put_block_list(container_name, full_blob_name, block_ids)
-        return full_blob_name
+		return full_blob_name
 
 	def _upload_block(self, container_name, full_blob_name, chunk, uid):
 		self.service.put_block(container_name, full_blob_name, chunk, uid)
@@ -78,7 +80,7 @@ class NFS_Controller:
 		with BytesIO() as output:
 			data.save(output, 'jpeg')
 			image_bytes = output.getvalue()
-		self._parallel_upload(container_name, full_blob_name, image_bytes)
+		self.parallel_chunky_upload(container_name, full_blob_name, image_bytes)
 		return full_blob_name
 
 	""" Download """
@@ -99,33 +101,33 @@ class NFS_Controller:
 
 	def _download_blob_helper(self, container_name, full_blob_name, result):
 		if(self.exists(container_name, full_blob_name)):
-			result['blob'] = self._download_data(container_name, full_blob_name)
+			result['blob'] = self.download_data(container_name, full_blob_name)
 		else:
 			return None
 
 	def download_data(self, container_name, full_blob_name):
 		if not(self.exists(container_name)):
 			self._create_container(container_name)
-            return None
-        blob = self.service.get_blob_to_bytes(container_name, full_blob_name)
-        return blob
+			return None
+		blob = self.service.get_blob_to_bytes(container_name, full_blob_name)
+		return blob
 
-    """ Logging """
-	def retreive_log_entities(self, container_name, path, filter = None):
+	""" Logging """
+	def retrieve_log_entities(self, container_name, path, filter = None):
 		log_path = '{}/log.txt'.format(path)
-        log_entries = LogEntriesBase()
+		log_entries = LogEntriesBase()
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
 			log_entries.deserialize(raw_logs)
 		if(filter != None):
-			log_entries = log_entries.GetLogs(filter=filter)
-        return log_entries
+			log_entries = log_entries.get_logs(filter=filter)
+		return log_entries
 
 	def update_log(self, container_name, entry):
-		path = self.get_parent_directory(entry['path'])
+		path = self.get_parent_directory(entry[LogEntriesBase.PATH])
 		log_path = '{}/log.txt'.format(path)
-        log_entries = LogEntriesBase()
+		log_entries = LogEntriesBase()
 		if self.exists(container_name,log_path):
 			log_file = self.service.get_blob_to_text(container_name, log_path)
 			raw_logs = log_file.content
@@ -135,24 +137,24 @@ class NFS_Controller:
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
 	def update_logs(self, container_name, entries):
-        log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) for log_entry in entries}
-        if len(log_paths) > 1:
-            raise ValueError('Logs being updated must be of the same log file')
-        log_path = log_paths[0]
+		log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry[LogEntriesBase.PATH])) for log_entry in entries}
+		if len(log_paths) > 1:
+			raise ValueError('Logs being updated must be of the same log file')
+		log_path = log_paths[0]
 		if not self.exists(container_name,log_path):
-            raise ValueError('Log file {} under container {} does not exist'.format(log_path, container_name))
-        log_entries = LogEntriesBase()
+			raise ValueError('Log file {} under container {} does not exist'.format(log_path, container_name))
+		log_entries = LogEntriesBase()
 		log_file = self.service.get_blob_to_text(container_name, log_path)
-        raw_logs = log_file.content
-        log_entries.deserialize(raw_logs)
+		raw_logs = log_file.content
+		log_entries.deserialize(raw_logs)
 		for entry in entries:
 			log_entries.update(entry)
 		raw = log_entries.serialize()
 		self.service.create_blob_from_text(container_name, log_path, raw)
 
-    """ Avoid Using this: It is not efficient and you should always update a log directly after resource use """
+	""" Avoid Using this: It is not efficient and you should always update a log directly after resource use """
 	def update_multiple_log_files(self, container_name, entries):
-        log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) for log_entry in entries}
+		log_paths = {'{}/log.txt'.format(self.get_parent_directory(log_entry[LogEntriesBase.PATH])) for log_entry in entries}
 		for log_path in log_paths:
-            entries = [log_entry for log_entry in entries if '{}/log.txt'.format(self.get_parent_directory(log_entry['path'])) == log_path]
-            self.update_logs(container_name, entries)
+			entries = [log_entry for log_entry in entries if '{}/log.txt'.format(self.get_parent_directory(log_entry[LogEntriesBase.PATH])) == log_path]
+			self.update_logs(container_name, entries)

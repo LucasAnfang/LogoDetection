@@ -2,18 +2,16 @@ import os
 import io
 from PIL import Image
 from array import array
-from storage_manager import LogoStorageConnector
-from instagram_post_entity import InstagramPostEntities
-from table_manager import TableStorageConnector
-import sys
 import numpy as np
 import math
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from models import train_image_classifier as train
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from models import test_build as test
-sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from models.datasets import convert_my as convert
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
+from src.storage_controller.NetworkedFileSystem.storage_manager import LogoStorageConnector
+from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
+from src.storage_controller.TableManagers.table_manager import TableStorageConnector
+from src.models import train_image_classifier as train
+from src.models import test_build as test
+from src.models.datasets import convert_my as convert
 class IGProccessingDriver:
 	def __init__(self):
 		self.storage_manager = LogoStorageConnector()

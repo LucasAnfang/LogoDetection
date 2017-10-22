@@ -1,6 +1,8 @@
-from storage_manager import LogoStorageConnector
-from input_log_entries import InputLogEntries
-
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
+from src.storage_controller.NetworkedFileSystem.storage_manager import LogoStorageConnector
+from src.storage_controller.Entities.input_log_entries import InputLogEntries
 
 logs = InputLogEntries("fu.txt")
 print logs.filename
