@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logo Detection</title>
     {% load staticfiles %}
-    
+
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/site.css' %}" />
     <script src="{% static 'app/scripts/modernizr-2.6.2.js' %}"></script>
@@ -14,7 +14,7 @@
     <!-- image picker -->
     <link rel="stylesheet" type="text/css" href="{% static 'app/image-picker/image-picker.css' %}" />
     <script src="{% static 'app/image-picker/image-picker.js' %}" /></script>
-    
+
     <!-- fun icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
@@ -29,12 +29,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/detector" class="navbar-brand">Logo Detection</a>
+                <a href="/detector/" class="navbar-brand">Logo Detection</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="{%url 'scrape'%}">Scrape</a></li>
                     <li><a href="{%url 'train'%}">Train Upload</a></li>
+                    <li><a href="{%url 'oselect'%}">Operate Upload</a></li>
                     <li><a href="{%url 'operateForm'%}">Operate Check</a></li>
                 </ul>
 

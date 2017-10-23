@@ -2,15 +2,21 @@
 
 {% block content %}
 
+{%if output%}
+<h3>{{output}}</h3>
+<img src="https://thumbs.gfycat.com/AshamedWeightyDachshund-max-1mb.gif"/>
+{% else %}
+
 <div class="container">
+	<h3> Scrape Instagram for Operate Set and Start Logo Detection</h3>
 	</br>
 	<h5 style = "color:red">{{errorString}}</h5>
 	<h5 style = "color:green">{{successString}}</h5>
 
 <div>
-	<form action="{% url 'callScraper' %}" method="POST">
+	<form action="{% url 'oupload' %}" method="POST">
 	{% csrf_token %}
-		<h3> Scrape Instagram for Training Set</h3>
+
 		<div class="form-group">
 		    <label for="brand">Brand</label>
 		    <input type="text" class="form-control" id="brand" name="brand">
@@ -19,14 +25,18 @@
 		    <label for="max_num">Max # of images to scrape for: </label>
 		    <input type="number" class="form-control" id="maxNum" name="maxNum">
 		 </div>
+		 <div class="form-group">
+		    <label for="hashtagList">Hashtags to scrape for (seperated by commas): </label>
+		    <input type="text" class="form-control" id="hashtagList" name="hashtagList">
+		 </div>
 
-		 <button type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" onclick="scrape()">Scrape</button>
+		 <button type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" onclick="scrape()">Detect Logos</button>
 	 </form>
  </div>
  </div>
 
 
-
+{%endif%}
 
  <script type="text/javascript">
 	function scrape() {
