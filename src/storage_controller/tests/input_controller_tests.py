@@ -3,12 +3,14 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
 from src.storage_controller.NetworkedFileSystem.input_controller import InputController
 from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
+from src.storage_controller.NetworkedFileSystem.nfs_controller_config import NFS_Controller_Config
 from PIL import Image
 
-config_name = '../Configs/nfs_test_config'
-
-ic = InputController(config_name)
-test_upload = False
+STORAGE_ACCOUNT_NAME = 'logodetectiontesting'
+STORAGE_ACCOUNT_KEY = 'HF0EwhCG2R8BBeKGV5qrloyz5Ua0kYQlSQI/vDWsTv3AjjK2nDJOD6Y8iLPjtF6nMnJr2zQZ0xhxkDF0biCArg=='
+config = NFS_Controller_Config(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
+ic = InputController(config)
+test_upload = True
 test_download = False
 
 if test_upload:

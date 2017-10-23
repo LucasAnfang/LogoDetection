@@ -65,14 +65,14 @@ def IG_train_upload(logo_brand, directory):
         #compress
         picDictList.append(data_transformer.picToStringDict(picture));
     #if dropping pickle,
-    #send picDictList to Lucas in json 
+    #send picDictList to Lucas in json
     #pickle list to serialize
     byteString = data_transformer.toPickle(picDictList)
     #call Lucas's function here
 
     #uncomment to test unpickling
     data_transformer.unserialize_train(byteString)
-    
+
 
 
 
@@ -89,7 +89,7 @@ def IG_operate(logo_brand, hashtagList, maxImages):
 
     picList = [] # list of dictionaries of metadata + string version of list
     destinationFolder = './'
-    
+
     for tag in hashtagList:
         args = {
             #use a list here instead of a loop
@@ -124,7 +124,7 @@ def IG_operate(logo_brand, hashtagList, maxImages):
     data_transformer.unserialize_operate(pickledPicList)
     #call luca's function here
     print "Operate complete"
-    
+
 
 def main():
     parser = argparse.ArgumentParser(

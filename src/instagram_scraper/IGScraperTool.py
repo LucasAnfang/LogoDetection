@@ -3,8 +3,9 @@ import os
 import argparse
 import textwrap
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
-from src.storage_controller.instagram_post_entity import InstagramPostEntities
-from src.storage_controller.storage_manager import LogoStorageConnector
+from src.storage_controller.NetworkedFileSystem.input_controller import InputController
+from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
+from src.storage_controller.NetworkedFileSystem.nfs_controller_config import NFS_Controller_Config
 from instagram_scraper import InstagramScraper
 #../storage_controller/
 
@@ -13,7 +14,8 @@ TRAIN: python IGScraperTool.py -t patagonia -m 10
 TRAIN UPLOAD: python IGScraperTool.py -tu patagonia -dl ./patagonia -dnl ./notPatagonia
 OPERATE:  python IGScraperTool.py  -o patagonia nature -l patagonia -m 2
 """
-
+STORAGE_ACCOUNT_NAME = 'logodetectiontesting'
+STORAGE_ACCOUNT_KEY = 'HF0EwhCG2R8BBeKGV5qrloyz5Ua0kYQlSQI/vDWsTv3AjjK2nDJOD6Y8iLPjtF6nMnJr2zQZ0xhxkDF0biCArg=='
 def IG_train(logo_brand, maxImages):
     '''
         Scrapes max Images from logo_brand name and saves it to a directory named
@@ -53,16 +55,17 @@ def IG_train(logo_brand, maxImages):
 def IG_train_upload(logo_brand, directory, noLogoDirectory):
     '''
         ***ASSUMES HUMAN HAS INSURED THAT ALL PICS CONTAIN <logo_brand>***
-        takes the directory './<logo_brand>' 
+        takes the directory './<logo_brand>'
     '''
-    lsc = LogoStorageConnector()
+    config = NFS_Controller_Config(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
+    ic = InputController(config)
     ipe = InstagramPostEntities(isTraining=True)
     '''
         TODO: Lucas fix this so takes in noLogoDirectory
     '''
-    ipe.archiveImageDirectory(directory, has_logo = True) 
-    ipe.archiveImageDirectory(noLogoDirectory, has_logo = False) 
-    lsc.upload_brand_training_input_IPE(logo_brand, ipe, isProcessed = False)
+    ipe.archiveImageDirectory(directory, has_logo = True)
+    ipe.archiveImageDirectory(noLogoDirectory, has_logo = False)
+    ic.upload_brand_training_input_IPE(logo_brand, ipe, False)
 
 def IG_operate(logo_brand, hashtagList, maxImages):
     '''
@@ -73,11 +76,12 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         compreses and serializes
         Calls Lucas's functions
     '''
-    lsc = LogoStorageConnector()
+    config = NFS_Controller_Config(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
+    ic = InputController(config)
 
     #saves it to director
     ipe = InstagramPostEntities(isClassification=True)
-    
+
     for tag in hashtagList:
         args = {
             #use a list here instead of a loop
@@ -108,7 +112,7 @@ def IG_operate(logo_brand, hashtagList, maxImages):
     print("Operate complete")
     #print(ipe.serialize())
     # lsc.upload_brand_operational_input_data(logo_brand, ipe.serialize(), isProcessed = False)
-    lsc.upload_brand_operational_input_IPE(logo_brand, ipe, isProcessed = False)
+    ic.upload_brand_operational_input_IPE(logo_brand, ipe, False)
 
 
 def main():
@@ -141,7 +145,7 @@ def main():
     if(args.train_upload is not None):
         if(args.dir_logo is None or args.dir_no_logo is None):
             print("Please provie both logo pic directory (--dir_logo) and no logo pic directory (--dir_no_logo)")
-            return        
+            return
         #check if dir is valid
         if not os.path.isdir(args.dir_logo) or not os.path.isdir(args.dir_no_logo):
             print("Error: invalid directory")
