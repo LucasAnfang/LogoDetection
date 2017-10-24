@@ -92,21 +92,30 @@ class NFS_Controller:
 
 	def batched_parallel_directory_upload(self, container_name, base_nfs_path, dirpath, extension_filter):
 		print dirpath
-		file_paths = ['{}/{}/{}'.format(os.path.realpath(fn).rsplit('/', 1)[0],dirpath,fn) for fn in os.listdir(dirpath) if (fn.endswith(extension_filter))]
+		file_paths = [os.path.realpath('{}/{}'.format(dirpath,fn)) for fn in os.listdir(dirpath) if (fn.endswith(extension_filter))]
+		print file_paths
+		total_files_count = len(file_paths)
 		current_index = 0
 		batch_size = 30
+		if not(self.exists(container_name)):
+			self.create_container(container_name)
+		batch_number = 1
 		while(True):
 			indices = [(current_index + i) for i in range(batch_size)]
-			file_paths_batch = [file_paths[i] for i in indices if (i < len(file_paths))]
+			file_paths_batch = [file_paths[i] for i in indices if (i < total_files_count)]
 			current_index += len(file_paths_batch)
 			if(len(file_paths_batch) == 0):
 				break
 			threads = []
+			index = indices[0]
 			for file_path in file_paths_batch:
+				print '[Batch {}: Percent of total {}]Uploading image from file path: {}'.format(batch_number, (((index * 1.0)/ (total_files_count - 1)) * 100.0), file_path)
 				t = threading.Thread(target=self.upload_from_path, args=(container_name, base_nfs_path, file_path))
 				threads.append(t)
+				index = index + 1
 				t.start()
 			[t.join() for t in threads]
+			batch_number = batch_number + 1
 
 	""" Download """
 	def parallel_download(self, container_name, full_blob_names):
