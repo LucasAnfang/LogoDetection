@@ -91,7 +91,8 @@ class NFS_Controller:
 		self.service.create_blob_from_path(container_name, full_blob_name, file_path)
 
 	def batched_parallel_directory_upload(self, container_name, base_nfs_path, dirpath, extension_filter):
-		file_paths = [os.path.abspath(fn) for fn in os.listdir(dirpath) if (fn.endswith(extension_filter))]
+		print dirpath
+		file_paths = ['{}/{}/{}'.format(os.path.realpath(fn).rsplit('/', 1)[0],dirpath,fn) for fn in os.listdir(dirpath) if (fn.endswith(extension_filter))]
 		current_index = 0
 		batch_size = 30
 		while(True):
