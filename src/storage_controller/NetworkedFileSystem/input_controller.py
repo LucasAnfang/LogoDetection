@@ -80,6 +80,7 @@ class InputController:
 		container_name = self._input_container()
 		logs = self.retrieve_log_entities(prefix, isProcessed = isProcessed)
 		for log in logs:
+			print log
 			blobs.append(self.nfs_controller.download_data(container_name, '{}/{}'.format(log[LogEntriesBase.PATH], 'post_entities.txt')))
 		return blobs
 

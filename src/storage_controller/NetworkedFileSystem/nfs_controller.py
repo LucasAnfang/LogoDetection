@@ -69,19 +69,43 @@ class NFS_Controller:
 
 	def upload_text(self, container_name, full_blob_name, data):
 		if not(self.exists(container_name)):
-			self._create_container(container_name)
+			self.create_container(container_name)
 		self.service.create_blob_from_text(container_name, full_blob_name, data)
 		return full_blob_name
 
 	def upload_image(self, container_name, path, data):
 		if not(self.exists(container_name)):
-			self._create_container(container_name)
+			self.create_container(container_name)
 		full_blob_name = '{}{}'.format(path, '.jpeg')
 		with BytesIO() as output:
 			data.save(output, 'jpeg')
 			image_bytes = output.getvalue()
 		self.parallel_chunky_upload(container_name, full_blob_name, image_bytes)
 		return full_blob_name
+
+	def upload_from_path(self, container_name, base_nfs_path, file_path):
+		if not(self.exists(container_name)):
+			self.create_container(container_name)
+		image_path = file_path.rsplit('/', 1)[1] if ('/' in file_path) else file_path
+		full_blob_name = '{}/{}'.format(base_nfs_path, image_path)
+		self.service.create_blob_from_path(container_name, full_blob_name, file_path)
+
+	def batched_parallel_directory_upload(self, container_name, base_nfs_path, dirpath, extension_filter):
+		file_paths = [os.path.abspath(fn) for fn in os.listdir(dirpath) if (fn.endswith(extension_filter))]
+		current_index = 0
+		batch_size = 30
+		while(True):
+			indices = [(current_index + i) for i in range(batch_size)]
+			file_paths_batch = [file_paths[i] for i in indices if (i < len(file_paths))]
+			current_index += len(file_paths_batch)
+			if(len(file_paths_batch) == 0):
+				break
+			threads = []
+			for file_path in file_paths_batch:
+				t = threading.Thread(target=self.upload_from_path, args=(container_name, base_nfs_path, file_path))
+				threads.append(t)
+				t.start()
+			[t.join() for t in threads]
 
 	""" Download """
 	def parallel_download(self, container_name, full_blob_names):
@@ -107,7 +131,7 @@ class NFS_Controller:
 
 	def download_data(self, container_name, full_blob_name):
 		if not(self.exists(container_name)):
-			self._create_container(container_name)
+			self.create_container(container_name)
 			return None
 		blob = self.service.get_blob_to_bytes(container_name, full_blob_name)
 		return blob
