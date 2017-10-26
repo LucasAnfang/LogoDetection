@@ -92,7 +92,7 @@ def supload(request):
 			print "error"
 	logoDir = os.getcwd() + "/" + "yes"+request.POST["brand"]
 	noLogoDir = os.getcwd() + "/" + "no"+request.POST["brand"]
-	#IGScraperTool.IG_train_upload(request.POST["brand"].lower(), logoDir, noLogoDir)
+	IGScraperTool.IG_train_upload(request.POST["brand"].lower(), logoDir, noLogoDir)
 	shutil.rmtree("no"+request.POST["brand"])
 	shutil.rmtree("yes"+request.POST["brand"])
 	shutil.rmtree(request.POST["brand"])
@@ -107,12 +107,12 @@ def oupload(request):
 			return render(request, 'detector/operateSelect.html', {"errorString": "Please fill out all fields"})
 	print request.POST["hashtagList"]
 	htList = request.POST["hashtagList"].split(',')
-	#IGScraperTool.IG_operate(request.POST["brand"].lower(), htList, request.POST["maxNum"]):
+	IGScraperTool.IG_operate(request.POST["brand"].lower(), htList, request.POST["maxNum"])
 	return render(request, 'detector/operateSelect.html', {"output": "Operate Session Started"})
 
 def upload(request):
 	if request.method == 'POST':
 		if len(request.POST["brand"]) is 0 or len(request.POST["logoNoDir"]) is 0 or len(request.POST["logoDir"]) is 0:
 			return render(request, 'detector/train.html', {"errorString": "Please fill out all fields"})
-	#IGScraperTool.IG_train_upload(request.POST["brand"], request.POST["logoDir"], request.POST["logoNoDir"])
+	IGScraperTool.IG_train_upload(request.POST["brand"], request.POST["logoDir"], request.POST["logoNoDir"])
 	return render(request, 'detector/train.html', {"successString": "Testing mode but worked!"})
