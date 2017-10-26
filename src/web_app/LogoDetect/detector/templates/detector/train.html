@@ -1,8 +1,8 @@
-{% extends "detector/layout.html" %}
+{{% extends "detector/layout.html" %}
 {% block content %}
-<br/>
-<br/>
+
 <div class="container">
+	</br>
 	</br>
 	<h5 style = "color:red">{{errorString}}</h5>
 	<h5 style = "color:green">{{successString}}</h5>
@@ -25,7 +25,7 @@
 		    <input type="text" class="form-control" id="logoNoDir" name="logoNoDir">
 		 </div>
 		-->
-		 <input type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" value ="Select">
+		 <input type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing"  onclick="change()"value ="Select">
 	 </form>
  </div>
  </div>
@@ -34,8 +34,8 @@
 
 
  <script type="text/javascript">
-	function scrape() {
-
+	function change() {
+		console.log("here");
 		$('.btn').button('loading');
 
 	}

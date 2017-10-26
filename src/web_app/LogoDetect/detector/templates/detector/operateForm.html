@@ -4,28 +4,26 @@
 <div class="content">
   <br/>
   <br/>
-  <div class="form-group">
+<h3>Operate Check</h3>
 
-    <label for="logo"><h3>Brand Logo:</h3></label>
-    <p id="error" style="color: red;"></p>
-    <input type="logo" class="form-control input" id="logo" placeholder="Logo">
-    <p id="emailHelp" class="form-text text-muted">Let's see if this brand is done operating.</p>
+  <form action="{% url 'operate' %}" method="POST">
+	{% csrf_token %}
+    <div class="form-group">
+		    <label for="brand">Brand:</label>
+		    <input type="text" class="form-control" id="brand" name="brand">
+    <p class="form-text text-muted">Let's see if this brand is done operating.</p>
   </div>
 
-  <button type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" onclick="redirect()">Submit</button>
+  <input type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" value ="Submit">
+ </form>
 
 </div>
 
 <script type="text/javascript">
 	function redirect() {
 
-		if(document.getElementById("logo").value.length == 0 || document.getElementById("logo").value == null){
-			document.getElementById("error").innerHTML = "Please input a logo";
-			return;
-		}
 		$('.btn').button('loading');
-		var newURL = "/detector/"+ document.getElementById("logo").value +"/operate";
-		window.location.replace(newURL);
+
 
 	}
 
