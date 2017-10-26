@@ -90,10 +90,10 @@ class NFS_Controller:
 		full_blob_name = '{}/{}'.format(base_nfs_path, image_path)
 		self.service.create_blob_from_path(container_name, full_blob_name, file_path)
 
-	def batched_parallel_directory_upload(self, container_name, base_nfs_path, dirpath, extension_filter):
+	def batched_parallel_directory_upload(self, container_name, base_nfs_path, dirpath, ext_filter_list = ['.jpeg', '.png', '.jpg']):
 		print dirpath
-		file_paths = [os.path.realpath('{}/{}'.format(dirpath,fn)) for fn in os.listdir(dirpath) if (fn.endswith(extension_filter))]
-		print file_paths
+		file_paths = [os.path.realpath('{}/{}'.format(dirpath,fn)) for fn in os.listdir(dirpath) if any(fn.endswith(extension_filter) for extension_filter in ext_filter_list)]
+		# print file_paths
 		total_files_count = len(file_paths)
 		current_index = 0
 		batch_size = 30

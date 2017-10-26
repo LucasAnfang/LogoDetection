@@ -59,8 +59,10 @@ class InstagramPostEntities:
 		if(self.isTraining == True):
 			if(post == None):
 				raise ValueError('No post supplied')
-			ig_post_entity[PICTURE] = post[PICTURE]
+			if PICTURE in post:
+				ig_post_entity[PICTURE] = post[PICTURE]
 			ig_post_entity[PICTURE_ID] = post[PICTURE_ID]
+			ig_post_entity['picture_id_with_extension'] = post['picture_id_with_extension']
 			ig_post_entity[HAS_LOGO] = post[HAS_LOGO]
 		self.posts.append(ig_post_entity)
 
@@ -79,6 +81,19 @@ class InstagramPostEntities:
 			post = {}
 			post[PICTURE] = picture
 			post[PICTURE_ID] = image_name.split('.')[0]
+			post[HAS_LOGO] = has_logo
+			self.append(post = post)
+
+	def archiveImageDirectoryPaths(self, directory, has_logo = True):
+		if(self.isTraining == False):
+			raise ValueError('You can only archive if this class is said to be for training')
+		for image_name in os.listdir(directory):
+			if image_name == '.DS_Store':
+				continue
+			image_name
+			post = {}
+			post[PICTURE_ID] = image_name.split('.')[0]
+			post['picture_id_with_extension'] = image_name
 			post[HAS_LOGO] = has_logo
 			self.append(post = post)
 
@@ -126,4 +141,3 @@ class InstagramPostEntities:
 
 	def deserialize(self, serialized_entity):
 		self.posts = json.loads(serialized_entity)
-

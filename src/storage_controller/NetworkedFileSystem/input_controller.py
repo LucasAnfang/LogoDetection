@@ -48,6 +48,20 @@ class InputController:
 	def upload_brand_training_input_IPE(self, brand, IPE, isProcessed):
 		return self.upload_IPE_to_bucket(brand, self.constants.TRAINING_DIRECTORY_NAME, IPE, isProcessed)
 
+	def upload_brand_training_input_IPE_FAST(self, brand, logo_dir, no_logo_dir, IPE, isProcessed):
+		bucket_path = self._create_path_to_bucket(brand, self.constants.TRAINING_DIRECTORY_NAME)
+		bucket_post_entities_full_path = self._get_bucket_post_entities_file(bucket_path)
+		bucket_images_base_path = self._get_bucket_image_directory(bucket_path)
+		print 'bucket_path: {}\nbucket_post_entities_full_path: {}\nbucket_images_base_path: {}\n'.format(bucket_path, bucket_post_entities_full_path, bucket_images_base_path)
+		self.nfs_controller.batched_parallel_directory_upload(self._input_container(), bucket_images_base_path, logo_dir)
+		self.nfs_controller.batched_parallel_directory_upload(self._input_container(), bucket_images_base_path, no_logo_dir)
+		for element in IPE.posts:
+			path = '{}/{}'.format(bucket_images_base_path, element['picture_id_with_extension'])
+			element['image_path'] = path
+		self.nfs_controller.upload_text(self._input_container(), bucket_post_entities_full_path, IPE.serialize())
+		self.log(bucket_path, isProcessed)
+		return  bucket_path
+
 	def upload_brand_operational_input_IPE(self, brand, IPE, isProcessed):
 		return self.upload_IPE_to_bucket(brand, self.constants.OPERATIONAL_DIRECTORY_NAME, IPE, isProcessed)
 
