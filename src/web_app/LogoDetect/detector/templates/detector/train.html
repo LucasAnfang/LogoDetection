@@ -1,6 +1,7 @@
 {% extends "detector/layout.html" %}
 {% block content %}
-
+<br/>
+<br/>
 <div class="container">
 	</br>
 	<h5 style = "color:red">{{errorString}}</h5>
@@ -8,7 +9,7 @@
 
 <div>
 	<form action="{% url 'select' %}" method="POST">
-	{% csrf_token %} 
+	{% csrf_token %}
 		<h3> What brand would you like to sort the pictures for?</h3>
 		<div class="form-group">
 		    <label for="brand">Brand</label>
@@ -34,9 +35,9 @@
 
  <script type="text/javascript">
 	function scrape() {
-		
+
 		$('.btn').button('loading');
- 		
+
 	}
 
 

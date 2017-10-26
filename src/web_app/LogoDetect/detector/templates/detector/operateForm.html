@@ -1,18 +1,20 @@
 
 {% extends "detector/layout.html" %}
 {% block content %}
-
+<div class="content">
+  <br/>
+  <br/>
   <div class="form-group">
 
     <label for="logo"><h3>Brand Logo:</h3></label>
     <p id="error" style="color: red;"></p>
-    <input type="logo" class="form-control input-lg" id="logo" placeholder="Logo">
+    <input type="logo" class="form-control input" id="logo" placeholder="Logo">
     <p id="emailHelp" class="form-text text-muted">Let's see if this brand is done operating.</p>
   </div>
 
   <button type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" onclick="redirect()">Submit</button>
 
-
+</div>
 
 <script type="text/javascript">
 	function redirect() {
