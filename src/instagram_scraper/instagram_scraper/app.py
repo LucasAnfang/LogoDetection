@@ -67,6 +67,12 @@ class InstagramScraper(object):
         if default_attr['filter']:
             self.filter = set(self.filter)
 
+    def scrape_operational_hashtag(self):
+        return self.__scrape_query_operate(self.query_hashtag_gen)
+
+    def scrape_hashtag_operate(self):
+        return self.__scrape_query_operate(self.query_hashtag_gen)
+
     def login(self):
         """Logs in to instagram."""
         self.session.headers.update({'Referer': BASE_URL})
@@ -95,7 +101,9 @@ class InstagramScraper(object):
                 self.logger.error(json.dumps(login_text))
 
     def logout(self):
+        return self.__scrape_query_operate(self.query_hashtag_gen)
         """Logs out of instagram."""
+        '''
         if self.logged_in:
             try:
                 logout_data = {'csrfmiddlewaretoken': self.cookies['csrftoken']}
@@ -103,6 +111,7 @@ class InstagramScraper(object):
                 self.logged_in = False
             except requests.exceptions.RequestException:
                 self.logger.warning('Failed to log out ' + self.login_user)
+                '''
 
     def make_dst_dir(self, username):
         """Creates the destination directory."""
@@ -176,8 +185,6 @@ class InstagramScraper(object):
     def scrape_hashtag(self):
         self.__scrape_query(self.query_hashtag_gen)
 
-    def scrape_hashtag_operate(self):
-        return self.__scrape_query_operate(self.query_hashtag_gen)
 
     def scrape_location(self):
         self.__scrape_query(self.query_location_gen)

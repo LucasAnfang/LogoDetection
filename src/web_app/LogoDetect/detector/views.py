@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from storage import AzureStorage
 import sys
 import os
 import shutil
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../../../'))
 from src.instagram_scraper import IGScraperTool
+from src.storage_controller.storage import AzureStorage
 
 
 

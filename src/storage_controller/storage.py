@@ -1,7 +1,3 @@
-from django.conf import settings
-from django.core.files.storage import Storage
-from django.core.files.base import ContentFile
-
 import azure
 from azure.storage import *
 from azure.storage.blob import BlockBlobService
@@ -9,11 +5,14 @@ from datetime import datetime
 import os, mimetypes
 from azure.cosmosdb.table import TableService, Entity
 
-class AzureStorage(Storage):
+
+class AzureStorage():
 
     def __init__(self, container=None):
-        self.table_service = TableService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
-        self.blob_service = BlockBlobService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
+        self.AZURE_STORAGE_ACCOUNT = 'logodetectionstorage'
+        self.AZURE_STORAGE_KEY  = 'jPJyzct+8WD1lKU5M+ZwDflWUGRu+YBpH8n/3Z6qR7WD7uc3HV2U1rtiQKesLRq2tU3jtXIe26RklAYdKzoydA=='
+        self.table_service = TableService(account_name=self.AZURE_STORAGE_ACCOUNT, account_key=self.AZURE_STORAGE_KEY)
+        self.blob_service = BlockBlobService(account_name=self. AZURE_STORAGE_ACCOUNT, account_key=self.AZURE_STORAGE_KEY)
         self.container = "input"
         self.table_list = [] #everything in the table for this logo
         self.logo = ""
