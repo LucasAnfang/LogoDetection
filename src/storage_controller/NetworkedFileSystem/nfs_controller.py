@@ -88,7 +88,7 @@ class NFS_Controller:
 			self.create_container(container_name)
 		path = file_path.rsplit('/', 1)[1] if ('/' in file_path) else file_path
 		if(base_nfs_path == ""):
-			full_blob_name = '{}'.format(base_nfs_path, path)
+			full_blob_name = '{}'.format(path)
 		else:
 			full_blob_name = '{}/{}'.format(base_nfs_path, path)
 		self.service.create_blob_from_path(container_name, full_blob_name, file_path)
