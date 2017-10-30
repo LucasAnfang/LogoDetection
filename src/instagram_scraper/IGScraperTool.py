@@ -63,9 +63,14 @@ def IG_train_upload(logo_brand, directory, noLogoDirectory):
     '''
         TODO: Lucas fix this so takes in noLogoDirectory
     '''
-    ipe.archiveImageDirectory(directory, has_logo = True)
-    ipe.archiveImageDirectory(noLogoDirectory, has_logo = False)
-    ic.upload_brand_training_input_IPE(logo_brand, ipe, False)
+    # ipe.archiveImageDirectory(directory, has_logo = True)
+    # ipe.archiveImageDirectory(noLogoDirectory, has_logo = False)
+    # ic.upload_brand_training_input_IPE(logo_brand, ipe, False)
+    dirs = [directory, noLogoDirectory]
+    print 'logo directory: {} || no logo directory: {} || Both {}'.format(directory,noLogoDirectory, dirs)
+    ipe.archiveImageDirectoryPaths(directory, has_logo = True)
+    ipe.archiveImageDirectoryPaths(noLogoDirectory, has_logo = False)
+    ic.upload_brand_training_input_IPE_FAST(logo_brand, directory, noLogoDirectory, ipe, False)
 
 def IG_operate(logo_brand, hashtagList, maxImages):
     '''
@@ -107,8 +112,9 @@ def IG_operate(logo_brand, hashtagList, maxImages):
             'latest': False,
             'logo_name': logo_brand
         }
+        print "before scraper"
         scraper = InstagramScraper(**args)
-        ipe.extend(scraper.scrape_hashtag_operate())
+        ipe.extend(scraper.logout())
     print("Operate complete")
     #print(ipe.serialize())
     # lsc.upload_brand_operational_input_data(logo_brand, ipe.serialize(), isProcessed = False)
