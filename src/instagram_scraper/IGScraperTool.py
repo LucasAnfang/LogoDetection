@@ -112,8 +112,9 @@ def IG_operate(logo_brand, hashtagList, maxImages):
             'latest': False,
             'logo_name': logo_brand
         }
+        print "before scraper"
         scraper = InstagramScraper(**args)
-        ipe.extend(scraper.scrape_hashtag_operate())
+        ipe.extend(scraper.logout())
     print("Operate complete")
     #print(ipe.serialize())
     # lsc.upload_brand_operational_input_data(logo_brand, ipe.serialize(), isProcessed = False)

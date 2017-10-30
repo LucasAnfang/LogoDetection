@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from storage import AzureStorage
 import sys
 import os
 import shutil
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../../../'))
 from src.instagram_scraper import IGScraperTool
+from src.storage_controller.storage import AzureStorage
 
 
 
@@ -14,20 +14,24 @@ def index(request):
 #	return HttpResponse(storage.query("$MetricsHourPrimaryTransactionsBlob", "20171016T0000", "system;All"))
 	return render(request, 'detector/index.html', {"test": "Logo Detection"})
 
-def operate(request, logo_id):
-	storage = AzureStorage()
-	'''
-	for result in storage.retrieve_table("patagonia"):
-		storage.download_blob(result.image_path)
-	'''
-	operate_results = storage.retrieve_table(logo_id)
-	if operate_results is None:
-		operate_results = "Invalid Table"
-	operate_results_dict = {
-		"operate_results": operate_results,
-		"logo": logo_id
-	}
-	return render(request, 'detector/operate.html', operate_results_dict)
+def operate(request):
+	if request.method == 'POST':
+		print "in operate"
+		print request.POST
+		if len(request.POST.get('brand')) is 0:
+			return render(request, 'detector/operateForm.html', {"errorString": "Please fill out both fields"})
+
+		storage = AzureStorage()
+		logo_id = request.POST.get('brand')
+		print logo_id
+		operate_results = storage.retrieve_table(logo_id)
+		if operate_results is None:
+			operate_results = "Invalid Table"
+		operate_results_dict = {
+			"operate_results": operate_results,
+			"logo": logo_id
+		}
+		return render(request, 'detector/operate.html', operate_results_dict)
 
 def operateForm(request):
 	return render(request, 'detector/operateForm.html', {})
@@ -68,6 +72,7 @@ def select(request):
 	return render(request, 'detector/trainSelect.html', resultDict)
 
 def supload(request):
+	print "in supload"
 	if request.method == 'POST':
 		if len(request.POST["picList"]) is 0:
 			return render(request, 'detector/trainSelect.html', {"errorString": "Please input a brand"})
@@ -92,7 +97,9 @@ def supload(request):
 			print "error"
 	logoDir = os.getcwd() + "/" + "yes"+request.POST["brand"]
 	noLogoDir = os.getcwd() + "/" + "no"+request.POST["brand"]
-	#IGScraperTool.IG_train_upload(request.POST["brand"].lower(), logoDir, noLogoDir)
+	print "made it to before tool"
+	IGScraperTool.IG_train_upload(request.POST["brand"].lower(), logoDir, noLogoDir)
+	print "made it after tools"
 	shutil.rmtree("no"+request.POST["brand"])
 	shutil.rmtree("yes"+request.POST["brand"])
 	shutil.rmtree(request.POST["brand"])
@@ -107,12 +114,12 @@ def oupload(request):
 			return render(request, 'detector/operateSelect.html', {"errorString": "Please fill out all fields"})
 	print request.POST["hashtagList"]
 	htList = request.POST["hashtagList"].split(',')
-	#IGScraperTool.IG_operate(request.POST["brand"].lower(), htList, request.POST["maxNum"]):
+	IGScraperTool.IG_operate(request.POST["brand"].lower(), htList, request.POST["maxNum"])
 	return render(request, 'detector/operateSelect.html', {"output": "Operate Session Started"})
 
 def upload(request):
 	if request.method == 'POST':
 		if len(request.POST["brand"]) is 0 or len(request.POST["logoNoDir"]) is 0 or len(request.POST["logoDir"]) is 0:
 			return render(request, 'detector/train.html', {"errorString": "Please fill out all fields"})
-	#IGScraperTool.IG_train_upload(request.POST["brand"], request.POST["logoDir"], request.POST["logoNoDir"])
+	IGScraperTool.IG_train_upload(request.POST["brand"], request.POST["logoDir"], request.POST["logoNoDir"])
 	return render(request, 'detector/train.html', {"successString": "Testing mode but worked!"})

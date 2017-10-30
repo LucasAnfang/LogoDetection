@@ -186,7 +186,7 @@ def _get_variables_to_train(trainable_scopes):
 
 
 def train(checkpoint_path,train_dir,dataset_dir,
-         model_name = "inception_v4",trainable_scopes =['InceptionV4/Logits/Patagonia_Logits','InceptionV4/Logits/Patagonia_AuxLogits'],checkpoint_exclude_scopes =[],
+         model_name = "inception_v4",logo_name="",trainable_scopes =['InceptionV4/Logits/Patagonia_Logits','InceptionV4/Logits/Patagonia_AuxLogits'],checkpoint_exclude_scopes =[],
           optimizer="rmsprop",learning_rate_decay_type='fixed',batch_size=32,weight_decay=0.00004,
           max_number_of_steps=30000,log_every_n_steps=100,save_summaries_secs=60,save_interval_secs=60,task_id=0):
 
@@ -222,7 +222,7 @@ def train(checkpoint_path,train_dir,dataset_dir,
         #num_classes=(dataset.num_classes),
         weight_decay=weight_decay,
         is_training=True,
-        logo_names= ['Patagonia'])
+        logo_names= [logo_name])
 
     #####################################
     # Select the preprocessing function #
@@ -260,31 +260,32 @@ def train(checkpoint_path,train_dir,dataset_dir,
     ####################
     # Define the model #
     ####################
-    def clone_fn(batch_queue,optimizer,batch_size,learning_rate_decay_type):
+    def clone_fn(batch_queue,optimizer,batch_size,learning_rate_decay_type,logo_name=""):
       """Allows data parallelism by creating multiple clones of network_fn."""
       with tf.device(deploy_config.inputs_device()):
         images, labels = batch_queue.dequeue()
       print("BEGIN")
-      logits, end_points = network_fn(images, logo_names= ['Patagonia'])
+      logits, end_points = network_fn(images, logo_names= [logo_name])
       print("END")
-
+      print("logo_name_is: ",logo_name)
       #############################
       # Specify the loss function #
       #############################
-      if 'Patagonia_AuxLogits' in end_points:
-        print('in here')
+      if logo_name != "":
+          logo_name += "_"
+      if logo_name+'AuxLogits' in end_points:
         tf.losses.softmax_cross_entropy(
-            logits=end_points['Patagonia_AuxLogits'], onehot_labels=labels,
+            logits=end_points[logo_name+'AuxLogits'], onehot_labels=labels,
             label_smoothing=0.0, weights=0.4, scope='aux_loss')
       tf.losses.softmax_cross_entropy(
-          logits=logits[-1], onehot_labels=labels,
+          logits=end_points[logo_name+'Logits'], onehot_labels=labels,
           label_smoothing=0.0, weights=1.0)
       return end_points
 
     # Gather initial summaries.
     summaries = set(tf.get_collection(tf.GraphKeys.SUMMARIES))
 
-    clones = model_deploy.create_clones(deploy_config, clone_fn, [batch_queue,optimizer,batch_size,learning_rate_decay_type])
+    clones = model_deploy.create_clones(deploy_config, lambda batch_queue,optimizer,batch_size,learning_rate_decay_type: clone_fn(batch_queue,optimizer,batch_size,learning_rate_decay_type,logo_name=logo_name), [batch_queue,optimizer,batch_size,learning_rate_decay_type])
     first_clone_scope = deploy_config.clone_scope(0)
     # Gather update_ops from the first clone. These contain, for example,
     # the updates for the batch_norm variables created by network_fn.
@@ -361,6 +362,6 @@ def train(checkpoint_path,train_dir,dataset_dir,
 
 
 
-'''def main(_):
-     train("../../checkpoints/inception_v4.ckpt","../../train2","../../BelgaLogos/tfrecord")
-main(None)'''
+def main(_):
+     train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord", logo_name="Patagonia")
+main(None)

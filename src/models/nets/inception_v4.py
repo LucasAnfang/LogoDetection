@@ -256,9 +256,8 @@ def inception_v4_base(inputs, final_endpoint='Mixed_7d', scope=None):
 def add_classifer(logo_name, num_classes,dropout_keep_prob,prev_tensor,net):
     print ("logo_name: ",logo_name)
     print ("num_classes: ",num_classes)
-    print ("dropout_keep_prob: ",dropout_keep_prob)
-    print ("name:", logo_name+'_AuxLogits')
-    with tf.variable_scope(logo_name+'_AuxLogits'):
+
+    with tf.variable_scope(logo_name+'AuxLogits'):
       # 17 x 17 x 1024
       aux_logits = prev_tensor
       aux_logits = slim.avg_pool2d(aux_logits, [5, 5], stride=3,
@@ -274,7 +273,7 @@ def add_classifer(logo_name, num_classes,dropout_keep_prob,prev_tensor,net):
                                         activation_fn=None,
                                         scope='Aux_logits')
 
-    with tf.variable_scope(logo_name+'_Logits'):
+    with tf.variable_scope(logo_name+'Logits'):
       # 8 x 8 x 1536
       logits = slim.avg_pool2d(net, net.get_shape()[1:3], padding='VALID',
                             scope='AvgPool_1a')
@@ -311,7 +310,7 @@ def inception_v4(inputs, num_classes=1001, is_training=True,
   """
   print ("num_classes2: ",num_classes)
   end_points = {}
-  logits_list = []
+  logits_dict = {}
   with tf.variable_scope(scope, 'InceptionV4', [inputs], reuse=reuse) as scope:
     with slim.arg_scope([slim.batch_norm, slim.dropout],
                         is_training=is_training):
@@ -352,17 +351,19 @@ def inception_v4(inputs, num_classes=1001, is_training=True,
                                         scope='Logits')
           end_points['Logits'] = logits
           end_points['Predictions'] = tf.nn.softmax(logits, name='Predictions')
-          logits_list.append(logits)
+          logits_dict[''] = logits
           # adding multiple logos
           for logo_name in logo_names:
-              logits,end_points[logo_name+'_AuxLogits'] = add_classifer(logo_name,2,dropout_keep_prob,end_points['Mixed_6h'],net)
-              with tf.variable_scope(logo_name+'_Logits'):
-                  print("logits",logits)
-                  end_points[logo_name+'_Logits'] = logits
-                  end_points[logo_name+'_Predictions'] = tf.nn.softmax(logits, name='Predictions')
-              logits_list.append(logits)
+              if logo_name != "":
+                  logo_name +="_"
+                  print("logo_name",logo_name)
+                  logits,end_points[logo_name+'AuxLogits'] = add_classifer(logo_name,2,dropout_keep_prob,end_points['Mixed_6h'],net)
+                  with tf.variable_scope(logo_name+'Logits'):
+                      end_points[logo_name+'Logits'] = logits
+                      end_points[logo_name+'Predictions'] = tf.nn.softmax(logits, name='Predictions')
+                  logits_dict [logo_name[:-1]] = logits
 
-    return logits_list, end_points
+    return logits_dict, end_points
 inception_v4.default_image_size = 299
 
 
