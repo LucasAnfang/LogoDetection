@@ -21,8 +21,8 @@ import concurrent.futures
 import requests
 import tqdm
 
-from instagram_scraper.constants import *
-from instagram_scraper.dictConstants import *
+from constants import *
+from dictConstants import *
 
 from PIL import Image
 import urllib, cStringIO
