@@ -9,10 +9,29 @@ from src.storage_controller.storage import AzureStorage
 
 
 
+
 def index(request):
 #	storage = AzureStorage(container="saracontainer")
 #	return HttpResponse(storage.query("$MetricsHourPrimaryTransactionsBlob", "20171016T0000", "system;All"))
 	return render(request, 'detector/index.html', {"test": "Logo Detection"})
+
+def csv(request):
+    # Create the HttpResponse object with the appropriate CSV header.
+	import csv
+	if request.method == 'GET':
+		print "here!"
+		print request.GET['brand']
+		response = HttpResponse(content_type='text/csv')
+		response['Content-Disposition'] = 'attachment; filename="'+request.GET.get('brand')+'.csv"'
+
+		storage = AzureStorage()
+		operate_results = storage.retrieve_table(request.GET.get('brand'))
+		keys = operate_results[0].keys()
+		writer = csv.DictWriter(response, keys)
+		writer.writeheader()
+		writer.writerows(operate_results)
+		return response
+
 
 def operate(request):
 	if request.method == 'POST':
@@ -27,10 +46,23 @@ def operate(request):
 		operate_results = storage.retrieve_table(logo_id)
 		if operate_results is None:
 			operate_results = "Invalid Table"
+			operate_results_dict = {
+				"operate_results": operate_results,
+				"logo": logo_id
+			}
+			return render(request, 'detector/operate.html', operate_results_dict)
+		#dict: id to of list for context
 		operate_results_dict = {
 			"operate_results": operate_results,
 			"logo": logo_id
 		}
+		'''
+		for item in operate_results:
+			operate_results_dict[item.PartitionKey] = item.context
+
+		print operate_results[0].image_context
+		print type(operate_results[0].image_context)
+		'''
 		return render(request, 'detector/operate.html', operate_results_dict)
 
 def operateForm(request):

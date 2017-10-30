@@ -9,6 +9,16 @@
 {% else %}
 </br>
 
+<form action="{% url 'csv' %}" method="GET">
+	{% csrf_token %}
+  <input type="hidden" name="brand" value="{{logo}}">
+  <button type="submit" id="load" class="btn btn-primary" onclick="change()">
+    <span class="spinner" style="display: none;">
+      <i class='fa fa-spinner fa-spin'></i></span>
+      Download CSV
+  </button>
+</form>
+
 {% for result in operate_results %}
 
 <div class="media">
@@ -21,7 +31,8 @@
     	<h3  class="mt-0" style="color: red; font-weight: bold;"> {{ result.logo_name }} logo NOT detected</h3>
     {% endif %}
     <h4>Username id: {{ result.owner_id }}</h4>
-    <p>{{ result.caption }}</p>
+    <!--<p>{{ result.caption }}</p>-->
+    <h4>Context: {{ result.image_context|cut:"]"|cut:"\""|cut:"[" }}</h4>
     <p class="mb-0"></p>
   </div>
 </div>
@@ -32,6 +43,19 @@
 
 
 {% endfor %}
+<script type="text/javascript">
+function change() {
+  console.log("in scrape function");
+  $('.spinner').show();
+  $('#load').addClass("disabled");
+  setTimeout(function() {
+      $('#load').removeClass("disabled");
+  }, 8000);
+
+}
+
+
+</script>
 
 {% endif %} <!-- Invalid Table -->
 

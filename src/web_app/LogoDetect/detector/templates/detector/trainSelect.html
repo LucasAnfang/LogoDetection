@@ -66,7 +66,10 @@
 </div>
 <br/>
 <div class="row">
-<button type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" onclick="seperate()">Upload</button>
+<button type="submit" class="btn btn-primary" id="load"  onclick="seperate()">
+	<span class="spinner" style="display: none;">
+		<i class='fa fa-spinner fa-spin'></i></span>
+		Upload</button>
 <h4 style = "color:red" id="errorString">{{errorString}}</h4>
 </div>
 
@@ -99,7 +102,8 @@ $(".image-checkbox").on("click", function (e) {
   e.preventDefault();
 });
 function seperate(){
-	$('.btn').button('loading');
+	$('.spinner').show();
+	$('#load').addClass("disabled");
 	var list = document.getElementsByClassName("image-checkbox");
 	console.log(list);
 	var pathList = [];

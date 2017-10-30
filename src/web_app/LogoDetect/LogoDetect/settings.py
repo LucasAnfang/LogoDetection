@@ -39,7 +39,9 @@ MEDIA_URL = 'http://storage.pepperdeck.com/<media_container>/'
 
 MEDIA_ROOT = os.path.dirname(os.path.dirname(__file__))
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '1scw1exf5p=bbrxls(66(8sp2=j)-od)ftq*1u0b6#iu_^x+k8'
+#SECRET_KEY = '1scw1exf5p=bbrxls(66(8sp2=j)-od)ftq*1u0b6#iu_^x+k8'
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '1scw1exf5p=bbrxls(66(8sp2=j)-od)ftq*1u0b6#iu_^x+k8')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

@@ -25,7 +25,11 @@
 		    <input type="text" class="form-control" id="logoNoDir" name="logoNoDir">
 		 </div>
 		-->
-		 <input type="submit" class="btn btn-primary" id="load" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing"  onclick="change()"value ="Select">
+		 <button type="submit" class="btn btn-primary" id="load"  onclick="change()">
+		 <span class="spinner" style="display: none;">
+			 <i class='fa fa-spinner fa-spin'></i></span>
+			 Select</button>
+		 </span>
 	 </form>
  </div>
  </div>
@@ -34,11 +38,12 @@
 
 
  <script type="text/javascript">
-	function change() {
-		console.log("here");
-		$('.btn').button('loading');
+ function change() {
+	 console.log("in scrape function");
+	 $('.spinner').show();
+	 $('#load').addClass("disabled");
 
-	}
+ }
 
 
 </script>

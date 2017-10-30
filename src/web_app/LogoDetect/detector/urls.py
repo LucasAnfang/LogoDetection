@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'operateForm', views.operateForm, name='operateForm'),
     url(r'operate', views.operate, name='operate'),
     url(r'scrape', views.scrape, name='scrape'),
+    url(r'csv', views.csv, name='csv'),
     url(r'callScraper', views.callScraper, name='callScraper'),
     url(r'train', views.train, name='train'),
     url(r'supload', views.supload, name='supload'),

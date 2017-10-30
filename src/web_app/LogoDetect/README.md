@@ -14,3 +14,10 @@ For azure table connection:
 > pip install azure
 > pip install azure-storage-table
 If that doesn't work, see https://github.com/Azure/azure-cosmosdb-python/tree/master/azure-cosmosdb-table for other options
+
+> git clone git://github.com/Azure/azure-cosmosdb-python.git
+> cd ./azure-cosmosdb-table
+> python setup.py install
+
+> sudo pip install Pillow
+> sudo pip install tqdm
