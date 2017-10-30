@@ -5,6 +5,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
 from src.storage_controller.NetworkedFileSystem.input_controller import InputController
+from src.storage_controller.NetworkedFileSystem.checkpoint_controller import CheckpointController
 from src.storage_controller.Entities.instagram_post_entity import InstagramPostEntities
 from src.storage_controller.TableManagers.table_manager import TableStorageConnector
 
@@ -17,18 +18,27 @@ from src.models import image_utils
 class Driver:
 	def __init__(self, input_config):
 		self.input_controller = InputController(input_config)
+		self.checkpoint_controller = CheckpointController(input_config)
 		self.table_manager = TableStorageConnector(input_config)
+		self.checkpoint_directory = "checkpoints"
+
+	def download_checkpoints(self):
+		self.checkpoint_controller.download_checkpoints(destination_directory = self.checkpoint_directory)
+
+	def upload_checkpoints(self):
+		self.checkpoint_controller.upload_checkpoints(self.checkpoint_directory)
 
 	def start_processing(self):
 		print("starting driver...")
 		self.brand_names = self.retrieve_supported_brands()
+		self.download_checkpoints()
 		for brand in self.brand_names:
-		 	#training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			#if(len(training_post_entities_blobs) != 0):
-		 	#	training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
-			#	self.process_training_post_entries(brand, training_post_entities_list)
-		 	#else:
-		 	#	print("No training data to be processed")
+		 	training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
+			if(len(training_post_entities_blobs) != 0):
+		 		training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
+				self.process_training_post_entries(brand, training_post_entities_list)
+		 	else:
+		 		print("No training data to be processed")
 			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(operational_post_entities_blobs) != 0):
 				operational_post_entities_list = self.extract_post_entities_data(operational_post_entities_blobs, isOperational = True)
@@ -36,7 +46,7 @@ class Driver:
 			else:
 				print("No operational data to be processed")
 			# self.update_log_files(training_post_entities_blobs, operational_post_entities_blobs)
-
+		self.upload_checkpoints()
 
 	def update_log_files(self, training_post_entities_blobs, operational_post_entities_blobs):
 		training_bucket_names = [blob.name.rsplit('/', 1)[0] for blob in training_post_entities_blobs]
@@ -71,7 +81,7 @@ class Driver:
 				current_index += len(images)
 				if(len(images) == 0):
 					break
-				results = test.classify("../../../resources/train",images,logo_names=["","Patagonia"],reuse=testvar)
+				results = test.classify(self.checkpoints_dir+"/train",images,logo_names=["","Patagonia"],reuse=testvar)
 				testvar = True
 				patching_index = indices[0]
 				for index in range(len(images)):
@@ -120,8 +130,8 @@ class Driver:
 			#call bryces interfaces here
 			print("len of image",len(images))
 			print("len of labels",len(labels))
-			convert.convert_to("../../../resources/tfrecord",images,labels)
-			train.train("../../../resources/checkpoints/inception_v4.ckpt","../../../resources/train","../../../resources/tfrecord", logo_name="Patagonia")
+			convert.convert_to("../../storage_controller/tests/tfrecord",images,labels)
+			train.train("../../storage_controller/tests/"+self.checkpoint_directory+"/inception_v4.ckpt","../../storage_controller/tests/"+self.checkpoint_directory,"../../storage_controller/tests/tfrecord", logo_name="Patagonia")
 		print("Training completed for brand: ", brand)
 
 

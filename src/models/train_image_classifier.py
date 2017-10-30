@@ -362,6 +362,6 @@ def train(checkpoint_path,train_dir,dataset_dir,
 
 
 
-def main(_):
+'''def main(_):
      train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord", logo_name="Patagonia")
-main(None)
+main(None)'''
