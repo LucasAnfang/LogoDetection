@@ -162,7 +162,7 @@ class TableStorageConnector:
 
 		entity[ACCURACY] = EntityProperty(EdmType.DOUBLE, instagram_post_entity[ACCURACY])
 
-		# entity[IMAGE_CONTEXT] = EntityProperty(EdmType.STRING, "None available atm") #self.serialize_entity_attribute_value(instagram_post_entity[IMAGE_CONTEXT])
+		entity[IMAGE_CONTEXT] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[IMAGE_CONTEXT])) 
 
 		entity[IMAGE_PATH] = EntityProperty(EdmType.STRING, instagram_post_entity[IMAGE_PATH])
 

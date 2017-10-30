@@ -82,14 +82,14 @@ def eval(checkpoint_path,eval_dir,dataset_dir,model_name = "inception_v4",batch_
     logits, _ = network_fn(images, logo_names= ['Patagonia'])
     variables_to_restore = slim.get_variables_to_restore()
 
-    predictions = tf.argmax(logits[-1], 1)
+    predictions = tf.argmax(logits['Patagonia'], 1)
     labels = tf.squeeze(labels)
 
     # Define the metrics:
     names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
         'Accuracy': slim.metrics.streaming_accuracy(predictions, labels),
         'Recall_5': slim.metrics.streaming_recall_at_k(
-            logits[-1], labels, 5),
+            logits['Patagonia'], labels, 5),
     })
 
     # Print the summaries to screen.
@@ -117,5 +117,5 @@ def eval(checkpoint_path,eval_dir,dataset_dir,model_name = "inception_v4",batch_
         variables_to_restore=variables_to_restore)
 
 def main(_):
-    print("eval: ",eval("../../train2","../../train2","../../BelgaLogos/tfrecord",model_name = "inception_v4",batch_size=100))
+    print("eval: ",eval("../../resources/train","../../resources/train","../../resources/tfrecord",model_name = "inception_v4",batch_size=100))
 main(None)

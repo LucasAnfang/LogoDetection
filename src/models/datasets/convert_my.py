@@ -73,11 +73,13 @@ def convert_to(database_dir,images, labels):
     _NUM_VALIDATION = int(math.floor(len(labels)*.2))
     _RANDOM_SEED = 0
     _NUM_SHARDS = 5
+    images = np.array(images)
+    labels = np.array(labels)
+    c = np.c_[images.reshape(len(images), -1), labels.reshape(len(labels), -1)]
+    np.random.shuffle(c)
+    images = c[:, :images.size//len(images)].reshape(images.shape)
+    labels = c[:, labels.size//len(labels):].reshape(labels.shape)
 
-    random.seed(_RANDOM_SEED)
-    random.shuffle(images)
-    random.seed(_RANDOM_SEED)
-    random.shuffle(labels)
     training_images = images[_NUM_VALIDATION:]
     validation_images = images[:_NUM_VALIDATION]
     num_per_shard_training = int(math.ceil(len(training_images) / float(_NUM_SHARDS)))
