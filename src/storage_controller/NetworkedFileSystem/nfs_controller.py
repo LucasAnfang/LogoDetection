@@ -86,13 +86,19 @@ class NFS_Controller:
 	def upload_from_path(self, container_name, base_nfs_path, file_path):
 		if not(self.exists(container_name)):
 			self.create_container(container_name)
-		image_path = file_path.rsplit('/', 1)[1] if ('/' in file_path) else file_path
-		full_blob_name = '{}/{}'.format(base_nfs_path, image_path)
+		path = file_path.rsplit('/', 1)[1] if ('/' in file_path) else file_path
+		if(base_nfs_path == ""):
+			full_blob_name = '{}'.format(base_nfs_path, path)
+		else:
+			full_blob_name = '{}/{}'.format(base_nfs_path, path)
 		self.service.create_blob_from_path(container_name, full_blob_name, file_path)
 
 	def batched_parallel_directory_upload(self, container_name, base_nfs_path, dirpath, ext_filter_list = ['.jpeg', '.png', '.jpg']):
 		print dirpath
-		file_paths = [os.path.realpath('{}/{}'.format(dirpath,fn)) for fn in os.listdir(dirpath) if any(fn.endswith(extension_filter) for extension_filter in ext_filter_list)]
+		if(ext_filter_list == None):
+			file_paths = [os.path.realpath('{}/{}'.format(dirpath,fn)) for fn in os.listdir(dirpath)]
+		else:
+			file_paths = [os.path.realpath('{}/{}'.format(dirpath,fn)) for fn in os.listdir(dirpath) if any(fn.endswith(extension_filter) for extension_filter in ext_filter_list)]
 		# print file_paths
 		total_files_count = len(file_paths)
 		current_index = 0
@@ -145,6 +151,40 @@ class NFS_Controller:
 			return None
 		blob = self.service.get_blob_to_bytes(container_name, full_blob_name)
 		return blob
+
+	def download_full_container(self, container_name, destination_directory = None):
+		if not(destination_directory == None):
+			destination_directory = os.path.realpath(destination_directory)
+			if not (os.path.isdir(destination_directory)):
+				os.makedirs(destination_directory)
+		else:
+			destination_directory = os.getcwd()
+		if not(self.exists(container_name)):
+			raise ValueError('Container does not exist')
+		blobs = self.service.list_blobs(container_name)
+		#code below lists all the blobs in the container and downloads them one after another
+		for blob in blobs:
+			print(blob.name)
+			print("{}".format(blob.name))
+			#check if the path contains a folder structure, create the folder structure
+			if "/" in "{}".format(blob.name):
+				print("there is a path in this")
+				#extract the folder path and check if that folder exists locally, and if not create it
+				head, tail = os.path.split("{}".format(blob.name))
+				print(head)
+				print(tail)
+				if (os.path.isdir(destination_directory+ "/" + head)):
+					#download the files to this directory
+					print("directory and sub directories exist")
+					self.service.get_blob_to_path(container_name,blob.name,destination_directory+ "/" + head + "/" + tail)
+				else:
+					#create the diretcory and download the file to it
+					print("directory doesn't exist, creating it now")
+					os.makedirs(destination_directory+ "/" + head)
+					print("directory created, download initiated")
+					self.service.get_blob_to_path(container_name,blob.name,destination_directory+ "/" + head + "/" + tail)
+			else:
+				self.service.get_blob_to_path(container_name,blob.name,destination_directory + "/" + blob.name)
 
 	""" Logging """
 	def retrieve_log_entities(self, container_name, path, filter = None):

@@ -1,0 +1,32 @@
+2.2)
+
+k-fold cross validation is a method for selecting the training and validation set by sampling many possible permutations of the 
+two to maximize accuracy. There are many problems with splitting samples into training and validation sets:
+
+In our current method we split the testing and training set from percentages of a shuffled sample list (This is the holdout method)
+
+|=========|======================|
+^---test--^-------training-------^
+
+For the training set we want to maximize the learning result
+For the testing set we want the best validation accuracy
+
+To explain K-fold I will use an example:
+- 200 entries in the dataset
+- k = 10 (we set k)
+
+Since k is 10 we divide the dataset into 10 (this is k) buckets of 20 entries
+
+So your dataset will look like this when it is separated.
+
+|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|=20=|
+
+You run k separate learning experiments. 
+	Each iteration you select one if the k buckets to be the testing set and the other
+	k - 1 buckets will be the training set. 
+	Train as we did using the training set and then test using this testing set. 
+Average test results from those k experiments
+
+Assessment of the learning algorithm will be more accurate and you will use all your data for training and all of your data for 
+testing. There is a tradeoff being runtime due to the fact there will be k - 1 more experiments per level.
+
