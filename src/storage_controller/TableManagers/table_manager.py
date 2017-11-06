@@ -176,3 +176,4 @@ class TableStorageConnector:
 
 	def get_all_entries(self, table_name):
 		 return list(self.service.query_entities(table_name))
+

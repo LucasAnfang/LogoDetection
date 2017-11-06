@@ -14,8 +14,14 @@ TRAIN: python IGScraperTool.py -t patagonia -m 10
 TRAIN UPLOAD: python IGScraperTool.py -tu patagonia -dl ./patagonia -dnl ./notPatagonia
 OPERATE:  python IGScraperTool.py  -o patagonia nature -l patagonia -m 2
 """
+'''
 STORAGE_ACCOUNT_NAME = 'logodetectiontesting'
 STORAGE_ACCOUNT_KEY = 'HF0EwhCG2R8BBeKGV5qrloyz5Ua0kYQlSQI/vDWsTv3AjjK2nDJOD6Y8iLPjtF6nMnJr2zQZ0xhxkDF0biCArg=='
+'''
+STORAGE_ACCOUNT_NAME = 'logodetectionstorage'
+STORAGE_ACCOUNT_KEY = 'jPJyzct+8WD1lKU5M+ZwDflWUGRu+YBpH8n/3Z6qR7WD7uc3HV2U1rtiQKesLRq2tU3jtXIe26RklAYdKzoydA=='
+
+
 def IG_train(logo_brand, maxImages):
     '''
         Scrapes max Images from logo_brand name and saves it to a directory named

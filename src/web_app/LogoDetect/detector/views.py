@@ -108,34 +108,36 @@ def supload(request):
 	if request.method == 'POST':
 		if len(request.POST["picList"]) is 0:
 			return render(request, 'detector/trainSelect.html', {"errorString": "Please input a brand"})
-
-	pathList = request.POST["picList"].split(',')
-	nonPathList = request.POST["nonPicList"].split(',')
-	if not os.path.isdir("no"+request.POST["brand"]):
-		os.makedirs("no"+request.POST["brand"])
-	if not os.path.isdir("yes"+request.POST["brand"]):
-		os.makedirs("yes"+request.POST["brand"])
-	for goodPath in pathList:
-		newPath = "yes"+request.POST["brand"]+"/"+goodPath.split('/')[len(goodPath.split('/'))-1]
-		try:
-			os.rename(goodPath, newPath)
-		except:
-			print "error"
-	for badPath in nonPathList:
-		newPath = "no"+request.POST["brand"]+"/"+badPath.split('/')[len(badPath.split('/'))-1]
-		try:
-			os.rename(goodPath, newPath)
-		except:
-			print "error"
-	logoDir = os.getcwd() + "/" + "yes"+request.POST["brand"]
-	noLogoDir = os.getcwd() + "/" + "no"+request.POST["brand"]
-	print "made it to before tool"
-	IGScraperTool.IG_train_upload(request.POST["brand"].lower(), logoDir, noLogoDir)
-	print "made it after tools"
-	shutil.rmtree("no"+request.POST["brand"])
-	shutil.rmtree("yes"+request.POST["brand"])
-	shutil.rmtree(request.POST["brand"])
-	return render(request, 'detector/trainSelect.html', {"output": "Training Session Started"})
+		pathList = request.POST["picList"].split(',')
+		nonPathList = request.POST["nonPicList"].split(',')
+		brandName = request.POST["brand"]
+		if request.POST["logoName"] is not "":
+			brandName = request.POST["logoName"]
+		if not os.path.isdir("no"+request.POST["brand"]):
+			os.makedirs("no"+request.POST["brand"])
+		if not os.path.isdir("yes"+request.POST["brand"]):
+			os.makedirs("yes"+request.POST["brand"])
+		for goodPath in pathList:
+			newPath = "yes"+request.POST["brand"]+"/"+goodPath.split('/')[len(goodPath.split('/'))-1]
+			try:
+				os.rename(goodPath, newPath)
+			except:
+				print "error"
+		for badPath in nonPathList:
+			newPath = "no"+request.POST["brand"]+"/"+badPath.split('/')[len(badPath.split('/'))-1]
+			try:
+				os.rename(goodPath, newPath)
+			except:
+				print "error"
+		logoDir = os.getcwd() + "/" + "yes"+request.POST["brand"]
+		noLogoDir = os.getcwd() + "/" + "no"+request.POST["brand"]
+		print "made it to before tool"
+		IGScraperTool.IG_train_upload(brandName.lower(), logoDir, noLogoDir)
+		print "made it after tools"
+		shutil.rmtree("no"+request.POST["brand"])
+		shutil.rmtree("yes"+request.POST["brand"])
+		shutil.rmtree(request.POST["brand"])
+		return render(request, 'detector/trainSelect.html', {"output": "Training Session Started"})
 
 
 
