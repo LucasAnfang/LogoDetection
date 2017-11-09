@@ -49,6 +49,7 @@ class InstagramScraper(object):
 
         allowed_attr = list(default_attr.keys())
         default_attr.update(kwargs)
+        print default_attr
         for key in default_attr:
             if key in allowed_attr:
                 self.__dict__[key] = kwargs.get(key)
@@ -101,6 +102,7 @@ class InstagramScraper(object):
                 self.logger.error(json.dumps(login_text))
 
     def logout(self):
+        print "in logout"
         return self.__scrape_query_operate(self.query_hashtag_gen)
         """Logs out of instagram."""
         '''
@@ -225,7 +227,7 @@ class InstagramScraper(object):
                 iter = iter + 1
                 if self.maximum != 0 and iter >= self.maximum:
                     break
-            
+
             if future_to_item:
                 for future in tqdm.tqdm(concurrent.futures.as_completed(future_to_item), total=len(future_to_item),
                                         desc='Downloading', disable=self.quiet):
@@ -238,7 +240,7 @@ class InstagramScraper(object):
             if (self.media_metadata or self.comments or self.include_location) and self.posts:
                 self.save_json(self.LDInfo, '{0}/{1}.json'.format(dst, value))
 
-    
+
     def __scrape_query_operate(self, media_generator, executor=concurrent.futures.ThreadPoolExecutor(max_workers=10)):
         """Scrapes the specified value for posted media."""
         for value in self.usernames:
@@ -260,7 +262,7 @@ class InstagramScraper(object):
                     #print "Download"
                     #print str(self.download)
                     #print "item"
-                    #get url from item 
+                    #get url from item
                     picURL = str(item['urls'][0])
                     file = cStringIO.StringIO(urllib.urlopen(picURL).read())
                     picture = Image.open(file)
@@ -288,7 +290,7 @@ class InstagramScraper(object):
                 iter = iter + 1
                 if self.maximum != 0 and iter >= self.maximum:
                     break
-            
+
             '''
             if future_to_item:
                 for future in tqdm.tqdm(concurrent.futures.as_completed(future_to_item), total=len(future_to_item),
@@ -430,8 +432,8 @@ class InstagramScraper(object):
         self.logout()
 
     def get_relevent_info(self):
-        ''' 
-        for the dictionary of posts, 
+        '''
+        for the dictionary of posts,
         filter out only what we need and return a better dictionary
         LDInfo = []
         '''

@@ -146,10 +146,12 @@ def oupload(request):
 	if request.method == 'POST':
 		if len(request.POST["brand"]) is 0 or len(request.POST["maxNum"]) is 0 or len(request.POST["hashtagList"]) is 0:
 			return render(request, 'detector/operateSelect.html', {"errorString": "Please fill out all fields"})
-	print request.POST["hashtagList"]
-	htList = request.POST["hashtagList"].split(',')
-	IGScraperTool.IG_operate(request.POST["brand"].lower(), htList, request.POST["maxNum"])
-	return render(request, 'detector/operateSelect.html', {"output": "Operate Session Started"})
+		print request.POST["maxNum"]
+		htList = request.POST["hashtagList"].split(',')
+		print str(htList)
+		IGScraperTool.IG_operate(request.POST["brand"].lower(), htList, request.POST["maxNum"])
+		print "after scraper tool"
+		return render(request, 'detector/operateSelect.html', {"output": "Operate Session Started"})
 
 def upload(request):
 	if request.method == 'POST':

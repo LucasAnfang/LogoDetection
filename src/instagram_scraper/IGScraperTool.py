@@ -89,17 +89,17 @@ def IG_operate(logo_brand, hashtagList, maxImages):
     '''
     config = NFS_Controller_Config(STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY)
     ic = InputController(config)
-
+    print "max in here" + str(maxImages)
     #saves it to director
     ipe = InstagramPostEntities(isClassification=True)
 
     for tag in hashtagList:
         args = {
             #use a list here instead of a loop
-            'username': [tag],
+            'username': [str(tag)],
             'verbose': 0,
             'login_user': None,
-            'usernames': [tag],
+            'usernames': [str(tag)],
             'quiet': False,
             'tag': True,
             'retain_username': True,
@@ -109,7 +109,7 @@ def IG_operate(logo_brand, hashtagList, maxImages):
             'search_location': False,
             'login_only': False,
             'destination': './',
-            'maximum': maxImages,
+            'maximum': int(maxImages),
             'comments': False,
             'filename': None,
             'filter': None,
@@ -120,7 +120,9 @@ def IG_operate(logo_brand, hashtagList, maxImages):
         }
         print "before scraper"
         scraper = InstagramScraper(**args)
+        print "after scraper"
         ipe.extend(scraper.logout())
+        print "after extend"
     print("Operate complete")
     #print(ipe.serialize())
     # lsc.upload_brand_operational_input_data(logo_brand, ipe.serialize(), isProcessed = False)
