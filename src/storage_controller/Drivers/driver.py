@@ -37,12 +37,12 @@ class Driver:
 		self.download_checkpoints()
 		for brand in self.brand_names:
 			self.testvar = False
-		 	#training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			#if(len(training_post_entities_blobs) != 0):
-		 	#	training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
-			#	self.process_training_post_entries(brand, training_post_entities_list)
-		 	#else:
-		 	#	print("No training data to be processed")
+		 	training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
+			if(len(training_post_entities_blobs) != 0):
+		 		training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
+				self.process_training_post_entries(brand, training_post_entities_list)
+		 	else:
+		 		print("No training data to be processed")
 			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(operational_post_entities_blobs) != 0):
 				operational_post_entities_list = self.extract_post_entities_data(operational_post_entities_blobs, isOperational = True)
