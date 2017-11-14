@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../..'))
 from src.storage_controller.Entities.log_entries_base import LogEntriesBase
 from src.storage_controller.Entities.input_log_entries import InputLogEntries
@@ -28,6 +29,33 @@ class CheckpointController:
 
 	def get_container_directories(self):
 		return self.nfs_controller.get_container_directories(self._checkpoint_container())
+
+	def swap_out_checkpoints(self, prev, next):
+		def clear_dir(name):
+			for the_file in os.listdir(name):
+			    file_path = os.path.join(name, the_file)
+			    try:
+			        if os.path.isfile(file_path):
+			            os.unlink(file_path)
+			    except Exception as e:
+			        print(e)
+		def swap_dir(prev, next):
+			for the_file in os.listdir(next):
+			    file_path = os.path.join(next, the_file)
+			    try:
+			        if os.path.isfile(file_path):
+			            shutil.move(file_path, prev)
+			    except Exception as e:
+			        print(e)
+
+		if os.path.isdir(prev) and os.path.isdir(next):
+			clear_dir(prev)
+			swap_dir(prev,next)
+			clear_dir(next)
+		else:
+			print("one of these faild")
+
+
 
 	""" Upload """
 	def upload_checkpoints(self, origin_directory):

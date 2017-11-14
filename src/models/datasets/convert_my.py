@@ -82,7 +82,9 @@ def convert_to(database_dir,images, labels):
 
     training_images = images[_NUM_VALIDATION:]
     validation_images = images[:_NUM_VALIDATION]
-    num_per_shard_training = int(math.ceil(len(training_images) / float(_NUM_SHARDS)))
+    print("len of training_images",len(training_images))
+    print("len of validation_images",len(validation_images))
+    num_per_shard_training = int(math.ceil(len(training_images) / float(_NUM_SHARDS))+1)
     for i in range(_NUM_SHARDS):
         write_tfrecord(database_dir,training_images[i*num_per_shard_training:(i+1)*num_per_shard_training],
         labels[_NUM_VALIDATION+i*num_per_shard_training:_NUM_VALIDATION+(i+1)*num_per_shard_training],'logo_train_%05d-of-%05d.tfrecord' % (i, _NUM_SHARDS))

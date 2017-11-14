@@ -20,25 +20,29 @@ class Driver:
 		self.input_controller = InputController(input_config)
 		self.checkpoint_controller = CheckpointController(input_config)
 		self.table_manager = TableStorageConnector(input_config)
-		self.checkpoint_directory = "checkpoints"
+		self.checkpoint_directory = "../../../resources/train"
+		self.testvar = False
 
 	def download_checkpoints(self):
-		self.checkpoint_controller.download_checkpoints(destination_directory = self.checkpoint_directory)
+		return
+		self.checkpoint_controller.download_checkpoints(destination_directory = self.checkpoint_directory+'/prev')
 
 	def upload_checkpoints(self):
-		self.checkpoint_controller.upload_checkpoints(self.checkpoint_directory)
+		self.checkpoint_controller.upload_checkpoints(self.checkpoint_directory+'/prev')
 
 	def start_processing(self):
 		print("starting driver...")
 		self.brand_names = self.retrieve_supported_brands()
+
 		self.download_checkpoints()
 		for brand in self.brand_names:
-		 	training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			if(len(training_post_entities_blobs) != 0):
-		 		training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
-				self.process_training_post_entries(brand, training_post_entities_list)
-		 	else:
-		 		print("No training data to be processed")
+			self.testvar = False
+		 	#training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
+			#if(len(training_post_entities_blobs) != 0):
+		 	#	training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
+			#	self.process_training_post_entries(brand, training_post_entities_list)
+		 	#else:
+		 	#	print("No training data to be processed")
 			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(operational_post_entities_blobs) != 0):
 				operational_post_entities_list = self.extract_post_entities_data(operational_post_entities_blobs, isOperational = True)
@@ -73,21 +77,22 @@ class Driver:
 			r2d2 = R2D2(self.input_controller)
 			r2d2.set_image_paths(image_paths, batch_size = batch_size)
 			current_index = 0
-			testvar = False
 			#node_lookup = image_utils.NodeLookup()
+			#brand = [x.capitalize() for x in brand]
 			while(True):
 				indices = [(current_index + i) for i in range(batch_size)]
 				images = [r2d2.get_image_with_path(post_entities.posts[i]['image_path']) for i in indices if (i < len(post_entities.posts))]
 				current_index += len(images)
 				if(len(images) == 0):
 					break
-				results = test.classify(self.checkpoints_dir+"/train",images,logo_names=["","Patagonia"],reuse=testvar)
-				testvar = True
+				print ("testvar: ", self.testvar)
+				results = test.classify(self.checkpoint_directory+'/prev',images,logo_names=["",brand],reuse=self.testvar)
+				self.testvar = True
 				patching_index = indices[0]
 				for index in range(len(images)):
-					post_entities.setAccuracyAtIndex(patching_index, float(results["Patagonia"][index][1]))
 				 	post_entities.setImageContextAtIndex(patching_index, [nameMap[node_id-1] for node_id in results[""][index]])
-				 	post_entities.setHasLogoAtIndex(patching_index, bool(round(results["Patagonia"][index][1])))
+					post_entities.setAccuracyAtIndex(patching_index, float(results[brand][index][1]))
+					post_entities.setHasLogoAtIndex(patching_index, bool(round(results[brand][index][1])))
 					patching_index += 1
 			self.table_manager.upload_instagram_post_entities(brand, post_entities)
 		print("Classification completed for brand: ", brand)
@@ -130,8 +135,9 @@ class Driver:
 			#call bryces interfaces here
 			print("len of image",len(images))
 			print("len of labels",len(labels))
-			convert.convert_to("../../storage_controller/tests/tfrecord",images,labels)
-			train.train("../../storage_controller/tests/"+self.checkpoint_directory+"/inception_v4.ckpt","../../storage_controller/tests/"+self.checkpoint_directory,"../../storage_controller/tests/tfrecord", logo_name="Patagonia")
+			convert.convert_to("../../../resources/tfrecord",images,labels)
+			train.train("../../../resources/checkpoints/inception_v4.ckpt", self.checkpoint_directory,"../../../resources/tfrecord", logo_name=brand)
+			self.checkpoint_controller.swap_out_checkpoints(self.checkpoint_directory+'/prev',self.checkpoint_directory)
 		print("Training completed for brand: ", brand)
 
 

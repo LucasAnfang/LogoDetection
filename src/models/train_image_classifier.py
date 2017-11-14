@@ -28,6 +28,7 @@ from nets import nets_factory
 from preprocessing import preprocessing_factory
 
 slim = tf.contrib.slim
+from tensorflow.python.training import saver as tf_saver
 
 def _configure_learning_rate(learning_rate_decay_type,num_samples_per_epoch, global_step, batch_size):
   """Configures the learning rate.
@@ -135,7 +136,9 @@ def _get_init_fn(checkpoint_path,train_dir,checkpoint_exclude_scopes = []):
     tf.logging.info(
         'Ignoring --checkpoint_path because a checkpoint already exists in %s'
         % train_dir)
-    return None
+    print("BEFORE checkpoint_path: ",checkpoint_path)
+    checkpoint_path = tf.train.latest_checkpoint(train_dir)
+    print("AFTER checkpoint_path: ",checkpoint_path)
 
   exclusions = []
   if checkpoint_exclude_scopes != []:
@@ -145,7 +148,7 @@ def _get_init_fn(checkpoint_path,train_dir,checkpoint_exclude_scopes = []):
   # TODO(sguada) variables.filter_variables()
   variables_to_restore = []
   for var in slim.get_model_variables():
-    print ("var: ", var);
+    print ("var????: ", var);
     excluded = False
     for exclusion in exclusions:
       if var.op.name.startswith(exclusion):
@@ -186,9 +189,11 @@ def _get_variables_to_train(trainable_scopes):
 
 
 def train(checkpoint_path,train_dir,dataset_dir,
-         model_name = "inception_v4",logo_name="",trainable_scopes =['InceptionV4/Logits/Patagonia_Logits','InceptionV4/Logits/Patagonia_AuxLogits'],checkpoint_exclude_scopes =[],
+         model_name = "inception_v4",logo_name="",checkpoint_exclude_scopes =[],
           optimizer="rmsprop",learning_rate_decay_type='fixed',batch_size=32,weight_decay=0.00004,
-          max_number_of_steps=30000,log_every_n_steps=100,save_summaries_secs=60,save_interval_secs=60,task_id=0):
+          max_number_of_steps=500,log_every_n_steps=100,save_summaries_secs=60,save_interval_secs=60,task_id=0):
+
+  trainable_scopes =['InceptionV4/Logits/'+logo_name+'_Logits','InceptionV4/Logits/'+logo_name+'_AuxLogits']
 
   if not dataset_dir:
     raise ValueError('You must supply the dataset directory with --dataset_dir')
@@ -344,7 +349,6 @@ def train(checkpoint_path,train_dir,dataset_dir,
     # Merge all summaries together.
     summary_op = tf.summary.merge(list(summaries), name='summary_op')
 
-
     ###########################
     # Kicks off the training. #
     ###########################
@@ -353,7 +357,7 @@ def train(checkpoint_path,train_dir,dataset_dir,
         logdir=train_dir,
         master="",
         is_chief=(task_id == 0),
-        init_fn=_get_init_fn(checkpoint_path,train_dir,checkpoint_exclude_scopes),
+        init_fn=_get_init_fn(checkpoint_path,train_dir+'/prev',checkpoint_exclude_scopes),
         summary_op=summary_op,
         number_of_steps=max_number_of_steps,
         log_every_n_steps=log_every_n_steps,
@@ -363,5 +367,5 @@ def train(checkpoint_path,train_dir,dataset_dir,
 
 
 '''def main(_):
-     train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord", logo_name="Patagonia")
+     train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord", logo_name="Nike")
 main(None)'''

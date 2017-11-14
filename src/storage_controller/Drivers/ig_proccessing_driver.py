@@ -21,12 +21,12 @@ class IGProccessingDriver:
 		print("starting driver...")
 		self.brand_names = self.retrieve_supported_brands()
 		for brand in self.brand_names:
-			# training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
-			# if(len(training_post_entities_blobs) != 0):
-			# 	training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
-			# 	# self.process_training_post_entries(brand, training_post_entities_list)
-			# else:
-			# 	print("No training data to be processed")
+			 training_post_entities_blobs = self.retrieve_unproccessed_training_post_entities(brand)
+			 if(len(training_post_entities_blobs) != 0):
+			 	training_post_entities_list = self.extract_post_entities_data(training_post_entities_blobs, isTraining = True)
+			 	# self.process_training_post_entries(brand, training_post_entities_list)
+			 else:
+			 	print("No training data to be processed")
 
 			operational_post_entities_blobs = self.retrieve_unproccessed_operational_post_entities(brand)
 			if(len(operational_post_entities_blobs) != 0):
@@ -66,7 +66,7 @@ class IGProccessingDriver:
 				if(len(images) == 0):
 					break
 				print("images type ", type(images))
-				results = test.classify("../../resources/train2",images,reuse=testvar)
+				results = test.classify("../../resources/train",images,reuse=testvar)
 				print("results type ", type(results))
 				testvar = True
 				names = ["Not Patagonia","Patagonia"]
@@ -120,8 +120,8 @@ class IGProccessingDriver:
 			#call bryces interfaces here
 			print("len of image",len(images))
 			print("len of labels",len(labels))
-			convert.convert_to("../../resources/tfrecord",images,labels)
-			train.train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord")
+			#convert.convert_to("../../resources/tfrecord",images,labels)
+			train.train("../../resources/checkpoints/inception_v4.ckpt","../../resources/train","../../resources/tfrecord", logo_name= brand.capitalize())
 		print("Training completed for brand: ", brand)
 
 
