@@ -445,7 +445,10 @@ class InstagramScraper(object):
             if "dimensions" in post:
                 pictureDict[DIMENSIONS] = post['dimensions']
             if "edge_media_to_caption" in post:
-                pictureDict[CAPTION] = post["edge_media_to_caption"]["edges"][0]["node"]["text"]
+                try:
+                    pictureDict[CAPTION] = post["edge_media_to_caption"]["edges"][0]["node"]["text"]
+                except:
+                    pictureDict[CAPTION] = "No caption avaliable "
             if "owner" in post:
                 pictureDict[OWNER_ID] = post["owner"]["id"]
             if "tags" in post:
