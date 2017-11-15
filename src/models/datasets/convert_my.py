@@ -70,7 +70,7 @@ def write_tfrecord(database_dir,images, labels, name):
         writer.write(example.SerializeToString())
 
 def convert_to(database_dir,images, labels):
-    _NUM_VALIDATION = int(math.floor(len(labels)*.2))
+    _NUM_VALIDATION = int(len(labels)*.2+1)
     _RANDOM_SEED = 0
     _NUM_SHARDS = 5
     images = np.array(images)
@@ -79,22 +79,28 @@ def convert_to(database_dir,images, labels):
     np.random.shuffle(c)
     images = c[:, :images.size//len(images)].reshape(images.shape)
     labels = c[:, labels.size//len(labels):].reshape(labels.shape)
-
     training_images = images[_NUM_VALIDATION:]
     validation_images = images[:_NUM_VALIDATION]
+    training_labels = labels[_NUM_VALIDATION:]
+    validation_labels = labels[:_NUM_VALIDATION]
     print("len of training_images",len(training_images))
     print("len of validation_images",len(validation_images))
-    num_per_shard_training = int(math.ceil(len(training_images) / float(_NUM_SHARDS))+1)
+    num_per_shard_training = int(len(training_images) / float(_NUM_SHARDS))
     for i in range(_NUM_SHARDS):
-        write_tfrecord(database_dir,training_images[i*num_per_shard_training:(i+1)*num_per_shard_training],
-        labels[_NUM_VALIDATION+i*num_per_shard_training:_NUM_VALIDATION+(i+1)*num_per_shard_training],'logo_train_%05d-of-%05d.tfrecord' % (i, _NUM_SHARDS))
+        write_tfrecord(database_dir,
+        training_images[i*num_per_shard_training:(i+1)*num_per_shard_training],
+        training_labels[i*num_per_shard_training:(i+1)*num_per_shard_training],
+        'logo_train_%05d-of-%05d.tfrecord' % (i, _NUM_SHARDS))
     num_per_shard_validation = int(math.ceil(len(validation_images) / float(_NUM_SHARDS)))
     for i in range(_NUM_SHARDS):
-        write_tfrecord(database_dir,validation_images[i*num_per_shard_validation:(i+1)*num_per_shard_validation],
-        labels[i*num_per_shard_validation:(i+1)*num_per_shard_validation],'logo_validation_%05d-of-%05d.tfrecord' % (i, _NUM_SHARDS))
+        write_tfrecord(database_dir,
+        validation_images[i*num_per_shard_validation:(i+1)*num_per_shard_validation],
+        validation_labels[i*num_per_shard_validation:(i+1)*num_per_shard_validation],
+        'logo_validation_%05d-of-%05d.tfrecord' % (i, _NUM_SHARDS))
 
 
 '''def main():
-        convert_to("tfrecord",images, labels, name)
-
-main(None)'''
+    images = [x for x in range(200)]
+    labels = [x for x in range(200)]
+    convert_to("tfrecord",images, labels)
+main()'''
