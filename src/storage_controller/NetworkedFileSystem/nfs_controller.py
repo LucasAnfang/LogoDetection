@@ -146,6 +146,7 @@ class NFS_Controller:
 			return None
 
 	def download_data(self, container_name, full_blob_name):
+		print "Full blob name: " + full_blob_name
 		if not(self.exists(container_name)):
 			self.create_container(container_name)
 			return None

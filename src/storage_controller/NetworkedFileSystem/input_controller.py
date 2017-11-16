@@ -119,9 +119,11 @@ class InputController:
 			processing_status = InputLogEntries.PROCESSED if isProcessed else InputLogEntries.UNPROCESSED
 			filter = { InputLogEntries.PROCESSING_STATUS : processing_status }
 		log_entries = self.nfs_controller.retrieve_log_entities(container, path, filter = filter)
-		if(paths_only == True):
+		if(paths_only == True and isProcessed == None): #if isProcessed is not None, it will be paths only already
 			return [log_entry[LogEntriesBase.PATH] for log_entry in log_entries.log_entries]
-		return log_blobs
+		elif(paths_only == True): #if isProcessed is not None, it will be paths only already
+			return [log_entry[LogEntriesBase.PATH] for log_entry in log_entries]
+		return log_entries
 
 	def update_log_entries(self, paths, isProcessed):
 		processing_status = InputLogEntries.PROCESSED if isProcessed else InputLogEntries.UNPROCESSED

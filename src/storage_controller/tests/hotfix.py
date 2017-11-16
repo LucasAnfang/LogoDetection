@@ -16,7 +16,7 @@ table_manager = TableStorageConnector(config)
 brands = ic.get_container_directories()
 for brand in brands:
     print 'downloading workloads for ' + brand
-    blobs = ic.download_brand_operational_post_entities(brand)
+    blobs = ic.download_brand_operational_post_entities(brand, isProcessed = False)
     for blob in blobs:
         ipe = InstagramPostEntities(isTraining = False, isClassification = True)
         ipe.deserialize(blob.content)
