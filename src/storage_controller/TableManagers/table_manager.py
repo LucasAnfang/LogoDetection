@@ -146,34 +146,46 @@ class TableStorageConnector:
 		else:
 			entity['RowKey'] = self.get_pk()
 
-		entity[PICTURE_ID] = EntityProperty(EdmType.INT64, instagram_post_entity[PICTURE_ID])
+		if(PICTURE_ID in instagram_post_entity and instagram_post_entity[PICTURE_ID] != None):
+			entity[PICTURE_ID] = EntityProperty(EdmType.INT64, instagram_post_entity[PICTURE_ID])
 
-		entity[OWNER_ID] = EntityProperty(EdmType.INT64, instagram_post_entity[OWNER_ID])
+		if(OWNER_ID in instagram_post_entity and instagram_post_entity[OWNER_ID] != None):
+			entity[OWNER_ID] = EntityProperty(EdmType.INT64, instagram_post_entity[OWNER_ID])
 
-		entity[LOGO_NAME] = EntityProperty(EdmType.STRING, instagram_post_entity[LOGO_NAME])
+		if(LOGO_NAME in instagram_post_entity and instagram_post_entity[LOGO_NAME] != None):
+			entity[LOGO_NAME] = EntityProperty(EdmType.STRING, instagram_post_entity[LOGO_NAME])
+
 		#This is a unix epoch timestamp (we will do conversion from utc to epoch for search)
-		entity[TIME] = EntityProperty(EdmType.INT64, instagram_post_entity[TIME])
+		if(TIME in instagram_post_entity and instagram_post_entity[TIME] != None):
+			entity[TIME] = EntityProperty(EdmType.INT64, instagram_post_entity[TIME])
 
-		entity[CAPTION] = EntityProperty(EdmType.STRING, instagram_post_entity[CAPTION])
+		if(CAPTION in instagram_post_entity and instagram_post_entity[CAPTION] != None):
+			entity[CAPTION] = EntityProperty(EdmType.STRING, instagram_post_entity[CAPTION])
 
-		entity[TAGS] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[TAGS]))
+		if(TAGS in instagram_post_entity and instagram_post_entity[TAGS] != None):
+			entity[TAGS] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[TAGS]))
 
-		entity[HAS_LOGO] = EntityProperty(EdmType.BOOLEAN, instagram_post_entity[HAS_LOGO])
+		if(HAS_LOGO in instagram_post_entity and instagram_post_entity[HAS_LOGO] != None):
+			entity[HAS_LOGO] = EntityProperty(EdmType.BOOLEAN, instagram_post_entity[HAS_LOGO])
+		
+		if(ACCURACY in instagram_post_entity and instagram_post_entity[ACCURACY] != None):
+			entity[ACCURACY] = EntityProperty(EdmType.DOUBLE, instagram_post_entity[ACCURACY])
 
-		entity[ACCURACY] = EntityProperty(EdmType.DOUBLE, instagram_post_entity[ACCURACY])
+		if(IMAGE_CONTEXT in instagram_post_entity and instagram_post_entity[IMAGE_CONTEXT] != None):
+			entity[IMAGE_CONTEXT] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[IMAGE_CONTEXT]))
 
-		entity[IMAGE_CONTEXT] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[IMAGE_CONTEXT])) 
-
-		entity[IMAGE_PATH] = EntityProperty(EdmType.STRING, instagram_post_entity[IMAGE_PATH])
-
-		entity[DIMENSIONS] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[DIMENSIONS]))
-
+		if(IMAGE_PATH in instagram_post_entity and instagram_post_entity[IMAGE_PATH] != None):
+			entity[IMAGE_PATH] = EntityProperty(EdmType.STRING, instagram_post_entity[IMAGE_PATH])
+		
+		if(DIMENSIONS in instagram_post_entity and instagram_post_entity[DIMENSIONS] != None):
+			entity[DIMENSIONS] = EntityProperty(EdmType.STRING, self.serialize_entity_attribute_value(instagram_post_entity[DIMENSIONS]))
 		return entity
 
 
 	def serialize_entity_attribute_value(self, attribute_value):
+		if(attribute_value == None):
+			return ""
 		return json.dumps(attribute_value, indent=4, ensure_ascii=False)
 
 	def get_all_entries(self, table_name):
 		 return list(self.service.query_entities(table_name))
-

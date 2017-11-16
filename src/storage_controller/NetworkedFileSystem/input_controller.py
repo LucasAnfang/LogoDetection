@@ -92,10 +92,10 @@ class InputController:
 	def download_brand_post_entities(self, brand, prefix, isProcessed = None):
 		blobs = []
 		container_name = self._input_container()
-		logs = self.retrieve_log_entities(prefix, isProcessed = isProcessed)
+		logs = self.retrieve_log_entities(prefix, isProcessed = isProcessed, paths_only = True)
 		for log in logs:
 			print log
-			blobs.append(self.nfs_controller.download_data(container_name, '{}/{}'.format(log[LogEntriesBase.PATH], 'post_entities.txt')))
+			blobs.append(self.nfs_controller.download_data(container_name, '{}/{}'.format(log, 'post_entities.txt')))
 		return blobs
 
 	def parallel_download(self, full_blob_names):
@@ -118,9 +118,9 @@ class InputController:
 		else:
 			processing_status = InputLogEntries.PROCESSED if isProcessed else InputLogEntries.UNPROCESSED
 			filter = { InputLogEntries.PROCESSING_STATUS : processing_status }
-		log_blobs = self.nfs_controller.retrieve_log_entities(container, path, filter = filter)
+		log_entries = self.nfs_controller.retrieve_log_entities(container, path, filter = filter)
 		if(paths_only == True):
-			return [log_entry[LogEntriesBase.PATH] for log_entry in log_blobs]
+			return [log_entry[LogEntriesBase.PATH] for log_entry in log_entries.log_entries]
 		return log_blobs
 
 	def update_log_entries(self, paths, isProcessed):
