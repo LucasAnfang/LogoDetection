@@ -30,9 +30,9 @@
     {% else %}
     	<h3  class="mt-0" style="color: red; font-weight: bold;"> {{ result.logo_name }} logo NOT detected</h3>
     {% endif %}
-    <h4>Username id: {{ result.owner_id }}</h4>
-    <!--<p>{{ result.caption }}</p>-->
-    <h4>Context: {{ result.image_context|cut:"]"|cut:"\""|cut:"[" }}</h4>
+    <h5><span style="text-decoration: underline;">Username id:</span> {{ result.owner_id }}</h5>
+    <h5><span style="text-decoration: underline;">Context:</span> {{ result.image_context|cut:"]"|cut:"\""|cut:"[" }}</h5>
+    <p><span style="text-decoration: underline;">Caption:</span>  {{ result.caption }}</p>
     <p class="mb-0"></p>
   </div>
 </div>

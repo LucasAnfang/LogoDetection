@@ -30,12 +30,12 @@ class AzureStorage():
         self.logo = tableName
         for task in tasks:
             self.table_list.append(task)
-        self.table_list = sorted(self.table_list, key=lambda k: k['has_logo'], reverse=True) 
+        self.table_list = sorted(self.table_list, key=lambda k: k['picture_id'], reverse=False) 
         return self.table_list
-    
+
     def download_blob(self, path, logoName):
         #download pic into logoName file
-        path = "images/" + logoName 
+        path = "images/" + logoName
 
         self.blob_service.get_blob_to_path(self.container, path, "test.jpeg")
 
@@ -45,4 +45,3 @@ class AzureStorage():
             return True
         except:
             return False
-
